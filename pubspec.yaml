@@ -1,0 +1,38 @@
+name: food_web_builder
+description: Jogo educacional de teias alimentares com Flame Engine e SQLite
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flame: ^1.27.0
+  flame_audio: ^2.1.2
+  sqflite: ^2.4.2
+  sqflite_common_ffi_web: ^1.1.1
+  path_provider: ^2.1.5
+  provider: ^6.1.5
+  cupertino_icons: ^1.0.8
+  sqflite_common_ffi: ^2.4.0+3
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/animais/campo/
+    - assets/images/animais/floresta/
+    - assets/images/animais/oceano/
+    - assets/images/animais/pantanal/
+    - assets/images/cenarios/
+    - assets/audio/campo/
+    - assets/audio/floresta/
+    - assets/audio/oceano/
+    - assets/audio/pantanal/
