@@ -12,6 +12,7 @@ import 'components/organism_component.dart';
 import 'components/connection_line.dart';
 import 'components/drag_indicator.dart';
 import 'components/background_component.dart';
+import 'effects/connection_effect.dart';
 import 'systems/connection_system.dart';
 
 class FoodWebGame extends FlameGame {
@@ -23,6 +24,9 @@ class FoodWebGame extends FlameGame {
   DragIndicator? dragIndicator;
   BackgroundComponent? _background;
   OrganismComponent? _lastHoveredTarget;
+
+  /// Called when a connection is validated, with (isCorrect, message).
+  void Function(bool correct, String message)? onConnectionResult;
 
   FoodWebGame({required this.gameService});
 
@@ -153,8 +157,8 @@ class FoodWebGame extends FlameGame {
     final target = connectionSystem.endDrag(organismComponents);
     dragIndicator = null;
     if (target != null && source != null) {
-      final sourceId = target.organism.id!;
-      final targetId = source.organism.id!;
+      final sourceId = target.organism.id!; // prey id
+      final targetId = source.organism.id!; // predator id
       final key = '$sourceId-$targetId';
 
       if (!gameService.playerConnections.contains(key)) {
@@ -168,8 +172,46 @@ class FoodWebGame extends FlameGame {
         connectionLines.add(line);
         add(line);
 
-        if (gameService.correctConnections.contains(key)) {
+        // --- Immediate validation ---
+        final predatorName = source.organism.name;
+        final preyName = target.organism.name;
+        final midX = (getOrganismCenter(source).dx + getOrganismCenter(target).dx) / 2;
+        final midY = (getOrganismCenter(source).dy + getOrganismCenter(target).dy) / 2;
+        final midPoint = Offset(midX, midY);
+
+        if (gameService.isConnectionCorrect(sourceId, targetId)) {
+          // CORRECT
+          line.flashThenColor(AppColors.connectionLine);
           _animatePredatorLunge(source, target);
+          add(ConnectionEffect(
+            center: midPoint,
+            color: AppColors.connectionLine,
+            isCorrect: true,
+          ));
+          final msg = 'Correto! $predatorName se alimenta de $preyName.';
+          onConnectionResult?.call(true, msg);
+        } else if (gameService.isConnectionReversed(sourceId, targetId)) {
+          // WRONG DIRECTION
+          line.animateColor(AppColors.connectionError);
+          source.addShakeEffect();
+          add(ConnectionEffect(
+            center: midPoint,
+            color: AppColors.connectionError,
+            isCorrect: false,
+          ));
+          const msg = 'Direção incorreta! Arraste o predador para a presa.';
+          onConnectionResult?.call(false, msg);
+        } else {
+          // WRONG COMBINATION
+          line.animateColor(AppColors.connectionError);
+          source.addShakeEffect();
+          add(ConnectionEffect(
+            center: midPoint,
+            color: AppColors.connectionError,
+            isCorrect: false,
+          ));
+          final msg = 'Ops! $predatorName não se alimenta de $preyName. Tente outra combinação!';
+          onConnectionResult?.call(false, msg);
         }
       }
     }

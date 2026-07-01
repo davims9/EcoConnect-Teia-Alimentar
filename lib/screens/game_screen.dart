@@ -23,6 +23,7 @@ class _GameScreenState extends State<GameScreen> {
     super.initState();
     final service = context.read<GameService>();
     _game = FoodWebGame(gameService: service);
+    _game.onConnectionResult = _onConnectionResult;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await AudioService.instance.init();
       if (service.currentPhase != null) {
@@ -372,6 +373,34 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onSubmit(GameService service) {
     _game.submitPhase();
+  }
+
+  void _onConnectionResult(bool correct, String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: correct ? const Color(0xFF1B5E20) : const Color(0xFFB71C1C),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height * 0.18,
+          left: 20,
+          right: 20,
+        ),
+      ),
+    );
   }
 
   void _showCompletionModal(BuildContext context, GameService service) {

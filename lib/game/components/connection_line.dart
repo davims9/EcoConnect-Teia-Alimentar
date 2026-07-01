@@ -28,6 +28,13 @@ class ConnectionLine extends Component {
     _colorProgress = 0;
   }
 
+  /// Flashes white briefly then transitions to [finalColor].
+  void flashThenColor(Color finalColor) {
+    color = const Color(0xFFFFFFFF);
+    _targetColor = finalColor;
+    _colorProgress = 0;
+  }
+
   @override
   void update(double dt) {
     super.update(dt);
