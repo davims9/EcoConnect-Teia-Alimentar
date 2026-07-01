@@ -150,10 +150,17 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
     final namePainter = TextPainter(
       text: TextSpan(
         text: organism.name,
-        style: const TextStyle(
-          fontSize: 11,
+        style: TextStyle(
+          fontSize: 14,
           color: Colors.white,
           fontWeight: FontWeight.w700,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.7),
+              blurRadius: 3,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -163,7 +170,7 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
       canvas,
       Offset(
         (size.x - namePainter.width) / 2,
-        size.y + 2,
+        size.y + 5,
       ),
     );
   }
