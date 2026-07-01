@@ -87,8 +87,80 @@ class FoodWebGame extends FlameGame {
   @override
   void render(Canvas canvas) {
     super.render(canvas);
+    _renderTrophicLegend(canvas);
     if (dragIndicator != null) {
       dragIndicator!.render(canvas);
+    }
+  }
+
+  /// Renders discreet trophic-level legend on the left side of the play area.
+  /// Shows zone labels (Predadores / Consumidores / Produtores) and faint
+  /// horizontal separator lines aligned with the DB-driven Y positions.
+  void _renderTrophicLegend(Canvas canvas) {
+    // Must match the safe-area margins used in loadPhase()
+    const topMargin = 120.0;
+    const bottomMargin = 100.0;
+    const sideMargin = 60.0;
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
+
+    // DB Y values of each trophic band (from database_seed.dart)
+    const predatorTopY = 0.06;   // predador_topo
+    const tertiaryY = 0.28;      // consumidor_terciario
+    const secondaryY = 0.48;     // consumidor_secundario
+    const primaryY = 0.66;       // consumidor_primario
+    const producerY = 0.85;      // produtor
+
+    // Zone boundaries — midpoints between adjacent groups
+    const boundaryPredCons = (tertiaryY + secondaryY) / 2;   // ~0.38
+    const boundaryConsProd = (primaryY + producerY) / 2;      // ~0.755
+
+    // Zone label centers — midpoint of each zone
+    const labelPredY = (predatorTopY + boundaryPredCons) / 2;   // ~0.22
+    const labelConsY = (boundaryPredCons + boundaryConsProd) / 2; // ~0.5675
+    const labelProdY = (boundaryConsProd + producerY) / 2;        // ~0.8025
+
+    double dbYToPixel(double dbY) => topMargin + dbY * safeHeight;
+
+    // 1) Faint horizontal separator lines across the play area
+    const lineColor = Color(0xFFFFFFFF);
+    final linePaint = Paint()
+      ..color = lineColor.withValues(alpha: 0.32)
+      ..strokeWidth = 1.0;
+
+    final lineStartX = sideMargin - 16.0;
+    final lineEndX = size.x - sideMargin;
+
+    for (final dbY in [boundaryPredCons, boundaryConsProd]) {
+      final y = dbYToPixel(dbY);
+      canvas.drawLine(Offset(lineStartX, y), Offset(lineEndX, y), linePaint);
+    }
+
+    // 2) Zone labels on the left side (inside the left margin)
+    final labelStyle = TextStyle(
+      color: const Color(0xFFFFFFFF).withValues(alpha: 0.50),
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 2.0,
+    );
+
+    final labels = [
+      (labelPredY, 'PREDADORES'),
+      (labelConsY, 'CONSUMIDORES'),
+      (labelProdY, 'PRODUTORES'),
+    ];
+
+    for (final (dbY, text) in labels) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: labelStyle),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        Offset(
+          sideMargin - 16 - painter.width,
+          dbYToPixel(dbY) - painter.height / 2,
+        ),
+      );
     }
   }
 
