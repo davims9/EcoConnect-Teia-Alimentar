@@ -204,37 +204,26 @@ class FoodWebGame extends FlameGame {
         // --- Immediate validation ---
         final predatorName = source.organism.name;
         final preyName = target.organism.name;
-        final midX = (getOrganismCenter(source).dx + getOrganismCenter(target).dx) / 2;
-        final midY = (getOrganismCenter(source).dy + getOrganismCenter(target).dy) / 2;
-        final midPoint = Offset(midX, midY);
+        final particleCenter = Offset(size.x / 2, size.y * 0.3);
 
         if (gameService.isConnectionCorrect(sourceId, targetId)) {
           // CORRECT
           line.flashThenColor(AppColors.connectionLine);
           _animatePredatorLunge(source, target);
-          add(ConnectionEffect(
-            center: midPoint,
-            isCorrect: true,
-          ));
+          _scheduleParticles(particleCenter, true);
           onConnectionResult?.call(true, _correctMessage(predatorName, preyName));
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
           // WRONG DIRECTION
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
-          add(ConnectionEffect(
-            center: midPoint,
-            isCorrect: false,
-          ));
+          _scheduleParticles(particleCenter, false);
           onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, true));
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         } else {
           // WRONG COMBINATION
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
-          add(ConnectionEffect(
-            center: midPoint,
-            isCorrect: false,
-          ));
+          _scheduleParticles(particleCenter, false);
           onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, false));
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         }
@@ -242,10 +231,17 @@ class FoodWebGame extends FlameGame {
     }
   }
 
-  /// After ~1.6 s the wrong line fades out; by the time the message is gone
-  /// (2 s) the line is already removed and the player can retry.
+  /// Particles fire ~2.8 s later, just before the card starts fading (3 s).
+  void _scheduleParticles(Offset center, bool isCorrect) {
+    Future.delayed(const Duration(milliseconds: 2800), () {
+      if (!isLoaded) return;
+      add(ConnectionEffect(center: center, isCorrect: isCorrect));
+    });
+  }
+
+  /// Wrong line starts fading at ~2.8 s so it disappears together with the card.
   void _scheduleWrongLineRemoval(ConnectionLine line, int sourceId, int targetId) {
-    Future.delayed(const Duration(milliseconds: 1600), () {
+    Future.delayed(const Duration(milliseconds: 2800), () {
       if (!line.isLoaded) return;
       line.fadeOut();
       connectionLines.remove(line);

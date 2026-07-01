@@ -25,7 +25,7 @@ class ConnectionEffect extends Component {
   void onLoad() {
     super.onLoad();
     final rng = Random();
-    final count = isCorrect ? 24 : 16;
+    final count = isCorrect ? 70 : 50;
 
     for (int i = 0; i < count; i++) {
       final Color color;
@@ -50,7 +50,7 @@ class ConnectionEffect extends Component {
       }
 
       final angle = rng.nextDouble() * 2 * pi;
-      final speed = 60 + rng.nextDouble() * 200;
+      final speed = 100 + rng.nextDouble() * 200;
       final radius = isCorrect
           ? (1.5 + rng.nextDouble() * 4.0)
           : (1.5 + rng.nextDouble() * 3.0);

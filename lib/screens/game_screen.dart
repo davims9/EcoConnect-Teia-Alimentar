@@ -413,27 +413,21 @@ class _GameScreenState extends State<GameScreen> {
       ),
       child: Container(
         key: ValueKey(_connectionKey),
-        constraints: const BoxConstraints(maxWidth: 340),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        constraints: const BoxConstraints(maxWidth: 280),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         decoration: BoxDecoration(
           color: _connectionIsCorrect
-              ? const Color(0xFF1B5E20).withValues(alpha: 0.94)
-              : const Color(0xFFB71C1C).withValues(alpha: 0.94),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: _connectionIsCorrect
-                ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
-                : const Color(0xFFEF5350).withValues(alpha: 0.5),
-            width: 1.5,
-          ),
+              ? const Color(0xFF1B5E20).withValues(alpha: 0.55)
+              : const Color(0xFFB71C1C).withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: (_connectionIsCorrect
                       ? const Color(0xFF4CAF50)
                       : const Color(0xFFEF5350))
-                  .withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
+                  .withValues(alpha: 0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -444,22 +438,22 @@ class _GameScreenState extends State<GameScreen> {
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
                 color: Colors.white,
                 height: 1.3,
               ),
             ),
             if (body.isNotEmpty) ...[
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
               Text(
                 body,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: Colors.white.withValues(alpha: 0.92),
-                  height: 1.4,
+                  height: 1.3,
                 ),
               ),
             ],
