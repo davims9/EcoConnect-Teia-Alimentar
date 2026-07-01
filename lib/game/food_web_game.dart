@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -12,6 +13,7 @@ import 'components/organism_component.dart';
 import 'components/connection_line.dart';
 import 'components/drag_indicator.dart';
 import 'components/background_component.dart';
+import 'effects/connection_effect.dart';
 import 'systems/connection_system.dart';
 
 class FoodWebGame extends FlameGame {
@@ -23,6 +25,9 @@ class FoodWebGame extends FlameGame {
   DragIndicator? dragIndicator;
   BackgroundComponent? _background;
   OrganismComponent? _lastHoveredTarget;
+
+  /// Called when a connection is validated, with (isCorrect, message).
+  void Function(bool correct, String message)? onConnectionResult;
 
   FoodWebGame({required this.gameService});
 
@@ -146,6 +151,34 @@ class FoodWebGame extends FlameGame {
     }
   }
 
+  /// Returns a child-friendly message for a correct connection.
+  String _correctMessage(String predator, String prey) {
+    final messages = [
+      '✅ Muito bem!\n\n$predator se alimenta de $prey!',
+      '🎉 Correto!\n\n$predator → $prey',
+      '🌟 Parabéns!\n\n$predator come $prey!',
+    ];
+    return messages[Random().nextInt(messages.length)];
+  }
+
+  /// Returns a child-friendly message for an incorrect connection.
+  String _wrongMessage(String predator, String prey, bool isReversed) {
+    if (isReversed) {
+      const messages = [
+        '🌿 Quase!\n\nArraste do predador para a presa.',
+        '🔄 Atenção!\n\nQuem come vai para quem é comido.',
+        '🤔 Ops!\n\nPense na direção da cadeia alimentar.',
+      ];
+      return messages[Random().nextInt(messages.length)];
+    }
+    final messages = [
+      '❌ Quase!\n\n$predator não come $prey. Tente outro!',
+      '🤔 Não é esse!\n\nQuem será que $predator realmente come?',
+      '🔍 Observe!\n\n$predator precisa de outra presa.',
+    ];
+    return messages[Random().nextInt(messages.length)];
+  }
+
   void onDragEnd() {
     _lastHoveredTarget?.setHighlight(false);
     _lastHoveredTarget = null;
@@ -153,8 +186,8 @@ class FoodWebGame extends FlameGame {
     final target = connectionSystem.endDrag(organismComponents);
     dragIndicator = null;
     if (target != null && source != null) {
-      final sourceId = target.organism.id!;
-      final targetId = source.organism.id!;
+      final sourceId = target.organism.id!; // prey id
+      final targetId = source.organism.id!; // predator id
       final key = '$sourceId-$targetId';
 
       if (!gameService.playerConnections.contains(key)) {
@@ -168,11 +201,52 @@ class FoodWebGame extends FlameGame {
         connectionLines.add(line);
         add(line);
 
-        if (gameService.correctConnections.contains(key)) {
+        // --- Immediate validation ---
+        final predatorName = source.organism.name;
+        final preyName = target.organism.name;
+        final particleCenter = Offset(size.x / 2, size.y * 0.3);
+
+        if (gameService.isConnectionCorrect(sourceId, targetId)) {
+          // CORRECT
+          line.flashThenColor(AppColors.connectionLine);
           _animatePredatorLunge(source, target);
+          _scheduleParticles(particleCenter, true);
+          onConnectionResult?.call(true, _correctMessage(predatorName, preyName));
+        } else if (gameService.isConnectionReversed(sourceId, targetId)) {
+          // WRONG DIRECTION
+          line.animateColor(AppColors.connectionError);
+          source.addShakeEffect();
+          _scheduleParticles(particleCenter, false);
+          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, true));
+          _scheduleWrongLineRemoval(line, sourceId, targetId);
+        } else {
+          // WRONG COMBINATION
+          line.animateColor(AppColors.connectionError);
+          source.addShakeEffect();
+          _scheduleParticles(particleCenter, false);
+          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, false));
+          _scheduleWrongLineRemoval(line, sourceId, targetId);
         }
       }
     }
+  }
+
+  /// Particles fire ~2.8 s later, just before the card starts fading (3 s).
+  void _scheduleParticles(Offset center, bool isCorrect) {
+    Future.delayed(const Duration(milliseconds: 2800), () {
+      if (!isLoaded) return;
+      add(ConnectionEffect(center: center, isCorrect: isCorrect));
+    });
+  }
+
+  /// Wrong line starts fading at ~2.8 s so it disappears together with the card.
+  void _scheduleWrongLineRemoval(ConnectionLine line, int sourceId, int targetId) {
+    Future.delayed(const Duration(milliseconds: 2800), () {
+      if (!line.isLoaded) return;
+      line.fadeOut();
+      connectionLines.remove(line);
+      gameService.removeConnection(sourceId, targetId);
+    });
   }
 
   void _animatePredatorLunge(OrganismComponent predator, OrganismComponent prey) {

@@ -88,6 +88,42 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
     _targetGlow = highlighted ? 1.0 : 0.0;
   }
 
+  /// Shakes the organism left and right to indicate a wrong connection.
+  void addShakeEffect() {
+    disableIdleAnimations();
+    final original = position.clone();
+    const amplitude = 6.0;
+
+    void shakeStep(int remaining, double amp) {
+      if (remaining <= 0) {
+        add(MoveToEffect(
+          original,
+          EffectController(duration: 0.05, curve: Curves.easeInOut),
+        )..onComplete = () {
+            enableIdleAnimations();
+            _baseY = position.y;
+          });
+        return;
+      }
+
+      // Move left
+      add(MoveToEffect(
+        Vector2(original.x - amp, original.y),
+        EffectController(duration: 0.04, curve: Curves.easeInOut),
+      )..onComplete = () {
+          // Move right
+          add(MoveToEffect(
+            Vector2(original.x + amp, original.y),
+            EffectController(duration: 0.04, curve: Curves.easeInOut),
+          )..onComplete = () {
+              shakeStep(remaining - 1, amp * 0.65);
+            });
+        });
+    }
+
+    shakeStep(3, amplitude);
+  }
+
   @override
   bool containsLocalPoint(Vector2 point) {
     final center = size / 2;
@@ -136,10 +172,17 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
     final namePainter = TextPainter(
       text: TextSpan(
         text: organism.name,
-        style: const TextStyle(
-          fontSize: 11,
+        style: TextStyle(
+          fontSize: 14,
           color: Colors.white,
           fontWeight: FontWeight.w700,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.7),
+              blurRadius: 3,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -149,7 +192,7 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
       canvas,
       Offset(
         (size.x - namePainter.width) / 2,
-        size.y + 2,
+        size.y + 5,
       ),
     );
   }

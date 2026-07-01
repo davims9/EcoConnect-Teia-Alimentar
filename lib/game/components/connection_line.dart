@@ -14,6 +14,7 @@ class ConnectionLine extends Component {
   double _targetProgress = 1;
   Color _targetColor;
   double _colorProgress = 1;
+  bool _isFading = false;
 
   ConnectionLine({
     required this.sourceId,
@@ -24,7 +25,23 @@ class ConnectionLine extends Component {
   }) : _targetColor = color;
 
   void animateColor(Color newColor) {
+    if (_isFading) return;
     _targetColor = newColor;
+    _colorProgress = 0;
+  }
+
+  /// Flashes white briefly then transitions to [finalColor].
+  void flashThenColor(Color finalColor) {
+    if (_isFading) return;
+    color = const Color(0xFFFFFFFF);
+    _targetColor = finalColor;
+    _colorProgress = 0;
+  }
+
+  /// Gradually fades the line to transparent, then removes it.
+  void fadeOut() {
+    _isFading = true;
+    _targetColor = const Color(0x00000000);
     _colorProgress = 0;
   }
 
@@ -36,9 +53,12 @@ class ConnectionLine extends Component {
       if (_progress > _targetProgress) _progress = _targetProgress;
     }
     if (_colorProgress < 1) {
-      _colorProgress += dt * 3;
+      _colorProgress += dt * (_isFading ? 4 : 3);
       if (_colorProgress > 1) _colorProgress = 1;
       color = Color.lerp(color, _targetColor, _colorProgress.clamp(0, 1) as double)!;
+    }
+    if (_isFading && _colorProgress >= 1) {
+      removeFromParent();
     }
   }
 
