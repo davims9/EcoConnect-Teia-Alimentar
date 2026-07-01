@@ -14,7 +14,7 @@ class ConnectionEffect extends Component {
   double _timer = 0;
   final List<_Particle> _particles = [];
 
-  static const double _duration = 1.2;
+  static const double _duration = 1.0;
 
   ConnectionEffect({
     required this.center,
@@ -50,7 +50,7 @@ class ConnectionEffect extends Component {
       }
 
       final angle = rng.nextDouble() * 2 * pi;
-      final speed = 40 + rng.nextDouble() * 130;
+      final speed = 60 + rng.nextDouble() * 200;
       final radius = isCorrect
           ? (1.5 + rng.nextDouble() * 4.0)
           : (1.5 + rng.nextDouble() * 3.0);
@@ -59,7 +59,7 @@ class ConnectionEffect extends Component {
         speed: speed,
         radius: radius,
         color: color,
-        delay: i * 0.012,
+        delay: i * 0.008,
       ));
     }
   }

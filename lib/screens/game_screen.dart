@@ -138,7 +138,7 @@ class _GameScreenState extends State<GameScreen> {
                         flame.GameWidget(game: _game),
                         if (_connectionMessage != null)
                           Positioned(
-                            top: MediaQuery.of(context).size.height * 0.06,
+                            top: MediaQuery.of(context).size.height * 0.25,
                             left: 24,
                             right: 24,
                             child: _buildConnectionMessage(),
@@ -394,13 +394,17 @@ class _GameScreenState extends State<GameScreen> {
       _connectionIsCorrect = correct;
       _connectionKey++;
     });
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
       setState(() => _connectionMessage = null);
     });
   }
 
   Widget _buildConnectionMessage() {
+    final parts = (_connectionMessage ?? '').split('\n\n');
+    final title = parts.isNotEmpty ? parts[0] : '';
+    final body = parts.length > 1 ? parts[1] : '';
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
       transitionBuilder: (child, anim) => FadeTransition(
@@ -409,12 +413,13 @@ class _GameScreenState extends State<GameScreen> {
       ),
       child: Container(
         key: ValueKey(_connectionKey),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        constraints: const BoxConstraints(maxWidth: 340),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         decoration: BoxDecoration(
           color: _connectionIsCorrect
-              ? const Color(0xFF1B5E20).withValues(alpha: 0.92)
-              : const Color(0xFFB71C1C).withValues(alpha: 0.92),
-          borderRadius: BorderRadius.circular(16),
+              ? const Color(0xFF1B5E20).withValues(alpha: 0.94)
+              : const Color(0xFFB71C1C).withValues(alpha: 0.94),
+          borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: _connectionIsCorrect
                 ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
@@ -426,20 +431,39 @@ class _GameScreenState extends State<GameScreen> {
               color: (_connectionIsCorrect
                       ? const Color(0xFF4CAF50)
                       : const Color(0xFFEF5350))
-                  .withValues(alpha: 0.25),
-              blurRadius: 16,
+                  .withValues(alpha: 0.3),
+              blurRadius: 20,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: DefaultTextStyle(
-          style: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            height: 1.4,
-          ),
-          child: Text(_connectionMessage ?? ''),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1.3,
+              ),
+            ),
+            if (body.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.92),
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

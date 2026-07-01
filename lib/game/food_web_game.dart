@@ -154,9 +154,9 @@ class FoodWebGame extends FlameGame {
   /// Returns a child-friendly message for a correct connection.
   String _correctMessage(String predator, String prey) {
     final messages = [
-      '🎉 Correto! $predator se alimenta de $prey!',
-      '✅ Muito bem! $predator → $prey',
-      '🌟 Parabéns! $predator come $prey!',
+      '✅ Muito bem!\n\n$predator se alimenta de $prey!',
+      '🎉 Correto!\n\n$predator → $prey',
+      '🌟 Parabéns!\n\n$predator come $prey!',
     ];
     return messages[Random().nextInt(messages.length)];
   }
@@ -165,16 +165,16 @@ class FoodWebGame extends FlameGame {
   String _wrongMessage(String predator, String prey, bool isReversed) {
     if (isReversed) {
       const messages = [
-        '🌿 Pense na direção!\nO predador vai para a presa.',
-        '🔄 Quase! Arraste de quem\ncome para quem é comido.',
-        '🤔 Lembre-se: o predador\ncaça a presa, não o contrário!',
+        '🌿 Quase!\n\nArraste do predador para a presa.',
+        '🔄 Atenção!\n\nQuem come vai para quem é comido.',
+        '🤔 Ops!\n\nPense na direção da cadeia alimentar.',
       ];
       return messages[Random().nextInt(messages.length)];
     }
     final messages = [
-      '❌ O/A $predator não\ncome $prey. Tente outro!',
-      '🤔 Quem será que\n$predator realmente come?',
-      '🔍 Observe os animais.\n$predator precisa de outra presa!',
+      '❌ Quase!\n\n$predator não come $prey. Tente outro!',
+      '🤔 Não é esse!\n\nQuem será que $predator realmente come?',
+      '🔍 Observe!\n\n$predator precisa de outra presa.',
     ];
     return messages[Random().nextInt(messages.length)];
   }
@@ -242,10 +242,10 @@ class FoodWebGame extends FlameGame {
     }
   }
 
-  /// After 1.8 s (while the message is visible), fade out the wrong line and
-  /// remove it so the player can retry.
+  /// After ~1.6 s the wrong line fades out; by the time the message is gone
+  /// (2 s) the line is already removed and the player can retry.
   void _scheduleWrongLineRemoval(ConnectionLine line, int sourceId, int targetId) {
-    Future.delayed(const Duration(milliseconds: 1800), () {
+    Future.delayed(const Duration(milliseconds: 1600), () {
       if (!line.isLoaded) return;
       line.fadeOut();
       connectionLines.remove(line);
