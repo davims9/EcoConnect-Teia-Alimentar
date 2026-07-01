@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -150,6 +151,34 @@ class FoodWebGame extends FlameGame {
     }
   }
 
+  /// Returns a child-friendly message for a correct connection.
+  String _correctMessage(String predator, String prey) {
+    final messages = [
+      '🎉 Correto! $predator se alimenta de $prey!',
+      '✅ Muito bem! $predator → $prey',
+      '🌟 Parabéns! $predator come $prey!',
+    ];
+    return messages[Random().nextInt(messages.length)];
+  }
+
+  /// Returns a child-friendly message for an incorrect connection.
+  String _wrongMessage(String predator, String prey, bool isReversed) {
+    if (isReversed) {
+      const messages = [
+        '🌿 Pense na direção!\nO predador vai para a presa.',
+        '🔄 Quase! Arraste de quem\ncome para quem é comido.',
+        '🤔 Lembre-se: o predador\ncaça a presa, não o contrário!',
+      ];
+      return messages[Random().nextInt(messages.length)];
+    }
+    final messages = [
+      '❌ O/A $predator não\ncome $prey. Tente outro!',
+      '🤔 Quem será que\n$predator realmente come?',
+      '🔍 Observe os animais.\n$predator precisa de outra presa!',
+    ];
+    return messages[Random().nextInt(messages.length)];
+  }
+
   void onDragEnd() {
     _lastHoveredTarget?.setHighlight(false);
     _lastHoveredTarget = null;
@@ -185,36 +214,43 @@ class FoodWebGame extends FlameGame {
           _animatePredatorLunge(source, target);
           add(ConnectionEffect(
             center: midPoint,
-            color: AppColors.connectionLine,
             isCorrect: true,
           ));
-          final msg = 'Correto! $predatorName se alimenta de $preyName.';
-          onConnectionResult?.call(true, msg);
+          onConnectionResult?.call(true, _correctMessage(predatorName, preyName));
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
           // WRONG DIRECTION
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           add(ConnectionEffect(
             center: midPoint,
-            color: AppColors.connectionError,
             isCorrect: false,
           ));
-          const msg = 'Direção incorreta! Arraste o predador para a presa.';
-          onConnectionResult?.call(false, msg);
+          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, true));
+          _scheduleWrongLineRemoval(line, sourceId, targetId);
         } else {
           // WRONG COMBINATION
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           add(ConnectionEffect(
             center: midPoint,
-            color: AppColors.connectionError,
             isCorrect: false,
           ));
-          final msg = 'Ops! $predatorName não se alimenta de $preyName. Tente outra combinação!';
-          onConnectionResult?.call(false, msg);
+          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, false));
+          _scheduleWrongLineRemoval(line, sourceId, targetId);
         }
       }
     }
+  }
+
+  /// After 1.8 s (while the message is visible), fade out the wrong line and
+  /// remove it so the player can retry.
+  void _scheduleWrongLineRemoval(ConnectionLine line, int sourceId, int targetId) {
+    Future.delayed(const Duration(milliseconds: 1800), () {
+      if (!line.isLoaded) return;
+      line.fadeOut();
+      connectionLines.remove(line);
+      gameService.removeConnection(sourceId, targetId);
+    });
   }
 
   void _animatePredatorLunge(OrganismComponent predator, OrganismComponent prey) {

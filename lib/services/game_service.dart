@@ -112,6 +112,14 @@ class GameService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Removes a previously-added connection so the player can retry.
+  void removeConnection(int sourceId, int targetId) {
+    if (_submitted || _phaseComplete) return;
+    final key = '$sourceId-$targetId';
+    _playerConnections.remove(key);
+    notifyListeners();
+  }
+
   void submitPhase() {
     if (_submitted || _phaseComplete) return;
     _stopTimer();

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart' as flame;
 import 'package:provider/provider.dart';
@@ -17,6 +19,9 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late FoodWebGame _game;
   bool _completionShown = false;
+  String? _connectionMessage;
+  bool _connectionIsCorrect = false;
+  int _connectionKey = 0;
 
   @override
   void initState() {
@@ -131,6 +136,13 @@ class _GameScreenState extends State<GameScreen> {
                     child: Stack(
                       children: [
                         flame.GameWidget(game: _game),
+                        if (_connectionMessage != null)
+                          Positioned(
+                            top: MediaQuery.of(context).size.height * 0.06,
+                            left: 24,
+                            right: 24,
+                            child: _buildConnectionMessage(),
+                          ),
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -377,27 +389,57 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onConnectionResult(bool correct, String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
+    setState(() {
+      _connectionMessage = message;
+      _connectionIsCorrect = correct;
+      _connectionKey++;
+    });
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted) return;
+      setState(() => _connectionMessage = null);
+    });
+  }
+
+  Widget _buildConnectionMessage() {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, anim) => FadeTransition(
+        opacity: anim,
+        child: child,
+      ),
+      child: Container(
+        key: ValueKey(_connectionKey),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: _connectionIsCorrect
+              ? const Color(0xFF1B5E20).withValues(alpha: 0.92)
+              : const Color(0xFFB71C1C).withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _connectionIsCorrect
+                ? const Color(0xFF4CAF50).withValues(alpha: 0.5)
+                : const Color(0xFFEF5350).withValues(alpha: 0.5),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (_connectionIsCorrect
+                      ? const Color(0xFF4CAF50)
+                      : const Color(0xFFEF5350))
+                  .withValues(alpha: 0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: DefaultTextStyle(
           style: const TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.w600,
             color: Colors.white,
+            height: 1.4,
           ),
-        ),
-        backgroundColor: correct ? const Color(0xFF1B5E20) : const Color(0xFFB71C1C),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 3),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height * 0.18,
-          left: 20,
-          right: 20,
+          child: Text(_connectionMessage ?? ''),
         ),
       ),
     );
