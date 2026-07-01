@@ -45,8 +45,8 @@ class DatabaseSeed {
       'name': 'Capim',
       'emoji': '🌱',
       'trophic_level': 'produtor',
-      'position_x': 0.15,
-      'position_y': 0.80,
+      'position_x': 0.50,
+      'position_y': 0.85,
     });
     await db.insert('organisms', {
       'id': 2,
@@ -54,8 +54,8 @@ class DatabaseSeed {
       'name': 'Gafanhoto',
       'emoji': '🦗',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.35,
-      'position_y': 0.55,
+      'position_x': 0.25,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 3,
@@ -63,8 +63,8 @@ class DatabaseSeed {
       'name': 'Coelho',
       'emoji': '🐇',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.65,
-      'position_y': 0.55,
+      'position_x': 0.75,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 4,
@@ -72,8 +72,8 @@ class DatabaseSeed {
       'name': 'Sapo',
       'emoji': '🐸',
       'trophic_level': 'consumidor_secundario',
-      'position_x': 0.15,
-      'position_y': 0.35,
+      'position_x': 0.50,
+      'position_y': 0.48,
     });
     await db.insert('organisms', {
       'id': 5,
@@ -82,7 +82,7 @@ class DatabaseSeed {
       'emoji': '🐍',
       'trophic_level': 'consumidor_terciario',
       'position_x': 0.50,
-      'position_y': 0.35,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 6,
@@ -90,8 +90,8 @@ class DatabaseSeed {
       'name': 'Raposa',
       'emoji': '🦊',
       'trophic_level': 'predador_topo',
-      'position_x': 0.80,
-      'position_y': 0.35,
+      'position_x': 0.25,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 7,
@@ -99,8 +99,8 @@ class DatabaseSeed {
       'name': 'Águia',
       'emoji': '🦅',
       'trophic_level': 'predador_topo',
-      'position_x': 0.50,
-      'position_y': 0.10,
+      'position_x': 0.75,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 8,
@@ -108,8 +108,8 @@ class DatabaseSeed {
       'name': 'Arbusto',
       'emoji': '🌿',
       'trophic_level': 'produtor',
-      'position_x': 0.15,
-      'position_y': 0.80,
+      'position_x': 0.50,
+      'position_y': 0.85,
     });
     await db.insert('organisms', {
       'id': 9,
@@ -117,8 +117,8 @@ class DatabaseSeed {
       'name': 'Lagarta',
       'emoji': '🐛',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.40,
-      'position_y': 0.65,
+      'position_x': 0.25,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 10,
@@ -126,8 +126,8 @@ class DatabaseSeed {
       'name': 'Aranha',
       'emoji': '🕷️',
       'trophic_level': 'consumidor_secundario',
-      'position_x': 0.70,
-      'position_y': 0.55,
+      'position_x': 0.25,
+      'position_y': 0.48,
     });
     await db.insert('organisms', {
       'id': 11,
@@ -135,8 +135,8 @@ class DatabaseSeed {
       'name': 'Sapo',
       'emoji': '🐸',
       'trophic_level': 'consumidor_secundario',
-      'position_x': 0.30,
-      'position_y': 0.40,
+      'position_x': 0.75,
+      'position_y': 0.48,
     });
     await db.insert('organisms', {
       'id': 12,
@@ -144,8 +144,8 @@ class DatabaseSeed {
       'name': 'Cobra',
       'emoji': '🐍',
       'trophic_level': 'consumidor_terciario',
-      'position_x': 0.60,
-      'position_y': 0.35,
+      'position_x': 0.50,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 13,
@@ -153,8 +153,8 @@ class DatabaseSeed {
       'name': 'Gavião',
       'emoji': '🦅',
       'trophic_level': 'predador_topo',
-      'position_x': 0.30,
-      'position_y': 0.10,
+      'position_x': 0.25,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 14,
@@ -162,8 +162,8 @@ class DatabaseSeed {
       'name': 'Veado',
       'emoji': '🦌',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.85,
-      'position_y': 0.75,
+      'position_x': 0.75,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 15,
@@ -171,8 +171,8 @@ class DatabaseSeed {
       'name': 'Onça-pintada',
       'emoji': '🐆',
       'trophic_level': 'predador_topo',
-      'position_x': 0.70,
-      'position_y': 0.10,
+      'position_x': 0.75,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 16,
@@ -180,8 +180,8 @@ class DatabaseSeed {
       'name': 'Fitoplâncton',
       'emoji': '🦠',
       'trophic_level': 'produtor',
-      'position_x': 0.15,
-      'position_y': 0.80,
+      'position_x': 0.30,
+      'position_y': 0.85,
     });
     await db.insert('organisms', {
       'id': 17,
@@ -189,8 +189,8 @@ class DatabaseSeed {
       'name': 'Alga',
       'emoji': '🌿',
       'trophic_level': 'produtor',
-      'position_x': 0.50,
-      'position_y': 0.80,
+      'position_x': 0.70,
+      'position_y': 0.85,
     });
     await db.insert('organisms', {
       'id': 18,
@@ -198,8 +198,8 @@ class DatabaseSeed {
       'name': 'Camarão',
       'emoji': '🦐',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.30,
-      'position_y': 0.55,
+      'position_x': 0.50,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 19,
@@ -207,8 +207,8 @@ class DatabaseSeed {
       'name': 'Sardinha',
       'emoji': '🐟',
       'trophic_level': 'consumidor_secundario',
-      'position_x': 0.65,
-      'position_y': 0.55,
+      'position_x': 0.50,
+      'position_y': 0.48,
     });
     await db.insert('organisms', {
       'id': 20,
@@ -216,8 +216,8 @@ class DatabaseSeed {
       'name': 'Polvo',
       'emoji': '🐙',
       'trophic_level': 'consumidor_terciario',
-      'position_x': 0.15,
-      'position_y': 0.30,
+      'position_x': 0.30,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 21,
@@ -225,8 +225,8 @@ class DatabaseSeed {
       'name': 'Atum',
       'emoji': '🐠',
       'trophic_level': 'consumidor_terciario',
-      'position_x': 0.55,
-      'position_y': 0.30,
+      'position_x': 0.70,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 22,
@@ -234,8 +234,8 @@ class DatabaseSeed {
       'name': 'Tubarão',
       'emoji': '🦈',
       'trophic_level': 'predador_topo',
-      'position_x': 0.40,
-      'position_y': 0.10,
+      'position_x': 0.50,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 23,
@@ -243,8 +243,8 @@ class DatabaseSeed {
       'name': 'Planta aquática',
       'emoji': '🌱',
       'trophic_level': 'produtor',
-      'position_x': 0.30,
-      'position_y': 0.80,
+      'position_x': 0.50,
+      'position_y': 0.85,
     });
     await db.insert('organisms', {
       'id': 24,
@@ -252,8 +252,8 @@ class DatabaseSeed {
       'name': 'Caramujo',
       'emoji': '🐌',
       'trophic_level': 'consumidor_primario',
-      'position_x': 0.60,
-      'position_y': 0.65,
+      'position_x': 0.50,
+      'position_y': 0.66,
     });
     await db.insert('organisms', {
       'id': 25,
@@ -261,8 +261,8 @@ class DatabaseSeed {
       'name': 'Peixe',
       'emoji': '🐟',
       'trophic_level': 'consumidor_secundario',
-      'position_x': 0.40,
-      'position_y': 0.50,
+      'position_x': 0.50,
+      'position_y': 0.48,
     });
     await db.insert('organisms', {
       'id': 26,
@@ -270,8 +270,8 @@ class DatabaseSeed {
       'name': 'Garça',
       'emoji': '🦅',
       'trophic_level': 'consumidor_terciario',
-      'position_x': 0.70,
-      'position_y': 0.35,
+      'position_x': 0.30,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 27,
@@ -279,8 +279,8 @@ class DatabaseSeed {
       'name': 'Jacaré',
       'emoji': '🐊',
       'trophic_level': 'consumidor_terciario',
-      'position_x': 0.25,
-      'position_y': 0.30,
+      'position_x': 0.70,
+      'position_y': 0.28,
     });
     await db.insert('organisms', {
       'id': 28,
@@ -288,8 +288,8 @@ class DatabaseSeed {
       'name': 'Cobra sucuri',
       'emoji': '🐍',
       'trophic_level': 'predador_topo',
-      'position_x': 0.55,
-      'position_y': 0.20,
+      'position_x': 0.30,
+      'position_y': 0.06,
     });
     await db.insert('organisms', {
       'id': 29,
@@ -297,8 +297,8 @@ class DatabaseSeed {
       'name': 'Onça-pintada',
       'emoji': '🐆',
       'trophic_level': 'predador_topo',
-      'position_x': 0.40,
-      'position_y': 0.07,
+      'position_x': 0.70,
+      'position_y': 0.06,
     });
   }
 

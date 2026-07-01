@@ -58,62 +58,26 @@ class FoodWebGame extends FlameGame {
     add(_background!);
 
     final organisms = gameService.organisms;
-    final positions = _generateRandomPositions(organisms.length);
 
-    for (int i = 0; i < organisms.length; i++) {
-      final component = OrganismComponent(organism: organisms[i]);
-      component.position = positions[i];
+    // Safe-area margins (pixels) to avoid AppBar (64px), bottom HUD (~60px),
+    // sprite half-size (55px), and name label (~20px).
+    const topMargin = 120.0;
+    const bottomMargin = 100.0;
+    const sideMargin = 60.0;
+
+    final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
+
+    for (final organism in organisms) {
+      final component = OrganismComponent(organism: organism);
+      component.position = Vector2(
+        sideMargin + organism.positionX * safeWidth,
+        topMargin + organism.positionY * safeHeight,
+      );
       component.scale = Vector2.zero();
       organismComponents.add(component);
       add(component);
     }
-  }
-
-  List<Vector2> _generateRandomPositions(int count) {
-    if (count <= 0) return [];
-    final random = Random();
-
-    final padding = 65.0;
-    final xMin = padding;
-    final xMax = size.x - padding;
-    final yMin = size.y * 0.12 + 10;
-    final yMax = size.y * 0.88 - 10;
-    final rangeX = xMax - xMin;
-    final rangeY = yMax - yMin;
-
-    if (rangeX <= 0 || rangeY <= 0) {
-      return List.generate(count, (_) => Vector2(size.x / 2, size.y / 2));
-    }
-
-    const minDist = 125.0;
-    const maxAttempts = 2000;
-    final positions = <Vector2>[];
-
-    for (int attempt = 0; attempt < maxAttempts && positions.length < count; attempt++) {
-      final pos = Vector2(
-        xMin + random.nextDouble() * rangeX,
-        yMin + random.nextDouble() * rangeY,
-      );
-      bool tooClose = false;
-      for (final existing in positions) {
-        if ((pos - existing).length < minDist) {
-          tooClose = true;
-          break;
-        }
-      }
-      if (!tooClose) {
-        positions.add(pos);
-      }
-    }
-
-    while (positions.length < count) {
-      positions.add(Vector2(
-        xMin + random.nextDouble() * rangeX,
-        yMin + random.nextDouble() * rangeY,
-      ));
-    }
-
-    return positions;
   }
 
   Offset getOrganismCenter(OrganismComponent comp) {
