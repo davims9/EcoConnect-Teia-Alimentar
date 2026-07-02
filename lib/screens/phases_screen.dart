@@ -1,11 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
 import '../models/phase.dart';
 import '../services/game_service.dart';
 import '../widgets/phase_card.dart';
-import 'game_screen.dart';
+import 'biome_intro_screen.dart';
 
 class PhasesScreen extends StatefulWidget {
   const PhasesScreen({super.key});
@@ -39,7 +38,6 @@ class _PhasesScreenState extends State<PhasesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
       body: Stack(
         children: [
@@ -247,28 +245,14 @@ class _PhasesScreenState extends State<PhasesScreen>
       );
       return;
     }
-    final success = await service.loadPhase(phase);
     if (!mounted) return;
-    if (!success) {
-      messenger.showSnackBar(
-        SnackBar(
-          content: const Text('Erro ao carregar a fase.'),
-          backgroundColor: const Color(0xFFC62828),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-      return;
-    }
-    if (!mounted) return;
-    final gameService = service;
     navigator.push(
-      MaterialPageRoute(builder: (_) => const GameScreen()),
+      MaterialPageRoute(
+        builder: (_) => BiomeIntroScreen(phase: phase),
+      ),
     ).then((_) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        gameService.refreshUnlockStatus();
+        service.refreshUnlockStatus();
       });
     });
   }

@@ -75,6 +75,11 @@ class GameService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Loads only the organisms for a phase (display-only, no timer/game state).
+  Future<List<Organism>> getOrganismsForPhase(int phaseId) async {
+    return _organismRepository.getByPhaseId(phaseId);
+  }
+
   Future<bool> loadPhase(Phase phase) async {
     _isLoading = true;
     _errorMessage = null;
