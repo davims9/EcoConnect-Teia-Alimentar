@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/asset_paths.dart';
@@ -264,25 +265,10 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.asset(
-                spritePath,
-                width: 52,
-                height: 52,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(
-                    child: Text(
-                      organism.name.isNotEmpty
-                          ? organism.name[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        color: Color(0xFF81C784),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  );
-                },
+              child: AnimatedSpriteThumbnail(
+                imagePath: spritePath,
+                size: 52,
+                organismName: organism.name,
               ),
             ),
           ),
@@ -419,6 +405,93 @@ class _GradientButtonState extends State<_GradientButton> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class AnimatedSpriteThumbnail extends StatefulWidget {
+  final String imagePath;
+  final double size;
+  final String organismName;
+
+  const AnimatedSpriteThumbnail({
+    super.key,
+    required this.imagePath,
+    required this.size,
+    required this.organismName,
+  });
+
+  @override
+  State<AnimatedSpriteThumbnail> createState() => _AnimatedSpriteThumbnailState();
+}
+
+class _AnimatedSpriteThumbnailState extends State<AnimatedSpriteThumbnail> {
+  int _currentIndex = 0;
+  Timer? _timer;
+  final List<int> _pingPongSequence = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1];
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = (_currentIndex + 1) % _pingPongSequence.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final frame = _pingPongSequence[_currentIndex];
+
+    return SizedBox(
+      width: widget.size,
+      height: widget.size,
+      child: ClipRect(
+        child: Stack(
+          children: [
+            Positioned(
+              left: -(frame * widget.size),
+              top: 0,
+              bottom: 0,
+              child: Image.asset(
+                widget.imagePath,
+                height: widget.size,
+                fit: BoxFit.fitHeight,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: widget.size * 6,
+                    alignment: Alignment.centerLeft,
+                    child: SizedBox(
+                      width: widget.size,
+                      child: Center(
+                        child: Text(
+                          widget.organismName.isNotEmpty
+                              ? widget.organismName[0].toUpperCase()
+                              : '?',
+                          style: const TextStyle(
+                            color: Color(0xFF81C784),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
