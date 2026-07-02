@@ -4,6 +4,7 @@ import 'package:flame/components.dart';
 import 'package:flame/flame.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
+import '../../core/app_colors.dart';
 import '../../core/asset_paths.dart';
 import '../../models/organism.dart';
 import '../food_web_game.dart';
@@ -195,5 +196,39 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
         size.y + 5,
       ),
     );
+
+    // Small trophic level indicator bar (rounded rectangle below the name)
+    final indicatorColor = _colorForTrophicLevel(organism.trophicLevel);
+    final barPaint = Paint()
+      ..color = indicatorColor.withValues(alpha: 0.80);
+    const barWidth = 22.0;
+    const barHeight = 3.0;
+    final nameBottom = size.y + 5 + namePainter.height;
+    final barRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(size.x / 2, nameBottom + 5),
+        width: barWidth,
+        height: barHeight,
+      ),
+      const Radius.circular(1.5),
+    );
+    canvas.drawRRect(barRect, barPaint);
+  }
+
+  Color _colorForTrophicLevel(String level) {
+    switch (level) {
+      case 'produtor':
+        return AppColors.correct;
+      case 'consumidor_primario':
+        return const Color(0xFFFFC107);
+      case 'consumidor_secundario':
+        return const Color(0xFFFF9800);
+      case 'consumidor_terciario':
+        return const Color(0xFFF57C00);
+      case 'predador_topo':
+        return AppColors.connectionError;
+      default:
+        return Colors.white70;
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flame/components.dart';
 import 'package:flame/game.dart';
 import 'package:flame/effects.dart';
 import 'package:flutter/animation.dart';
@@ -51,69 +52,37 @@ class FoodWebGame extends FlameGame {
     removeAll(children.whereType<OrganismComponent>().toList());
     removeAll(children.whereType<ConnectionLine>().toList());
     removeAll(children.whereType<DragIndicator>().toList());
+    removeAll(children.whereType<_TrophicLegendComponent>().toList());
 
     final phaseId = gameService.currentPhase?.id ?? 1;
     final bgPath = OrganismAssetPath.getBackgroundPath(phaseId);
     _background = BackgroundComponent(spritePath: bgPath, size: size);
     add(_background!);
 
-    final organisms = gameService.organisms;
-    final positions = _generateRandomPositions(organisms.length);
+    // Trophic legend renders between background and organisms (behind sprites)
+    add(_TrophicLegendComponent(gameSize: size));
 
-    for (int i = 0; i < organisms.length; i++) {
-      final component = OrganismComponent(organism: organisms[i]);
-      component.position = positions[i];
+    final organisms = gameService.organisms;
+
+    // Safe-area margins (pixels) to avoid AppBar (64px), bottom HUD (~60px),
+    // sprite half-size (55px), and name label (~20px).
+    const topMargin = 120.0;
+    const bottomMargin = 100.0;
+    const sideMargin = 60.0;
+
+    final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
+
+    for (final organism in organisms) {
+      final component = OrganismComponent(organism: organism);
+      component.position = Vector2(
+        sideMargin + organism.positionX * safeWidth,
+        topMargin + organism.positionY * safeHeight,
+      );
       component.scale = Vector2.zero();
       organismComponents.add(component);
       add(component);
     }
-  }
-
-  List<Vector2> _generateRandomPositions(int count) {
-    if (count <= 0) return [];
-    final random = Random();
-
-    final padding = 65.0;
-    final xMin = padding;
-    final xMax = size.x - padding;
-    final yMin = size.y * 0.12 + 10;
-    final yMax = size.y * 0.88 - 10;
-    final rangeX = xMax - xMin;
-    final rangeY = yMax - yMin;
-
-    if (rangeX <= 0 || rangeY <= 0) {
-      return List.generate(count, (_) => Vector2(size.x / 2, size.y / 2));
-    }
-
-    const minDist = 125.0;
-    const maxAttempts = 2000;
-    final positions = <Vector2>[];
-
-    for (int attempt = 0; attempt < maxAttempts && positions.length < count; attempt++) {
-      final pos = Vector2(
-        xMin + random.nextDouble() * rangeX,
-        yMin + random.nextDouble() * rangeY,
-      );
-      bool tooClose = false;
-      for (final existing in positions) {
-        if ((pos - existing).length < minDist) {
-          tooClose = true;
-          break;
-        }
-      }
-      if (!tooClose) {
-        positions.add(pos);
-      }
-    }
-
-    while (positions.length < count) {
-      positions.add(Vector2(
-        xMin + random.nextDouble() * rangeX,
-        yMin + random.nextDouble() * rangeY,
-      ));
-    }
-
-    return positions;
   }
 
   Offset getOrganismCenter(OrganismComponent comp) {
@@ -297,6 +266,95 @@ class FoodWebGame extends FlameGame {
       } else if (correct.contains(key)) {
         line.animateColor(AppColors.primary);
       }
+    }
+  }
+}
+
+/// Discreet trophic-level legend rendered between background and organisms.
+///
+/// Draws zone labels (PREDADORES / CONSUMIDORES / PRODUTORES) with
+/// trophic-matching colors and faint horizontal separator lines.
+class _TrophicLegendComponent extends Component {
+  final Vector2 gameSize;
+
+  _TrophicLegendComponent({required this.gameSize});
+
+  @override
+  void render(Canvas canvas) {
+    final size = gameSize;
+
+    // Safe-area margins — must match loadPhase()
+    const topMargin = 120.0;
+    const bottomMargin = 100.0;
+    const sideMargin = 60.0;
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
+
+    // DB Y values of each trophic band (from database_seed.dart)
+    const predatorTopY = 0.06;   // predador_topo
+    const tertiaryY = 0.28;      // consumidor_terciario
+    const secondaryY = 0.48;     // consumidor_secundario
+    const primaryY = 0.66;       // consumidor_primario
+    const producerY = 0.85;      // produtor
+
+    // Zone boundaries — midpoints between adjacent groups
+    const boundaryPredCons = (tertiaryY + secondaryY) / 2;   // ~0.38
+    const boundaryConsProd = (primaryY + producerY) / 2;      // ~0.755
+
+    // Zone label centers — midpoint of each zone
+    const labelPredY = (predatorTopY + boundaryPredCons) / 2;   // ~0.22
+    const labelConsY = (boundaryPredCons + boundaryConsProd) / 2; // ~0.5675
+    const labelProdY = (boundaryConsProd + producerY) / 2;        // ~0.8025
+
+    double dbYToPixel(double dbY) => topMargin + dbY * safeHeight;
+
+    // Trophic zone colors (matching organism indicators)
+    const predColor = Color(0xFFEF5350);
+    const consColor = Color(0xFFFFC107);
+    const prodColor = Color(0xFF4CAF50);
+
+    // 1) Faint horizontal separator lines across the safe play area
+    final linePaint = Paint()
+      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.80)
+      ..strokeWidth = 1.0;
+    final lineStartX = sideMargin;
+    final lineEndX = size.x - sideMargin;
+
+    for (final dbY in [boundaryPredCons, boundaryConsProd]) {
+      final y = dbYToPixel(dbY);
+      canvas.drawLine(Offset(lineStartX, y), Offset(lineEndX, y), linePaint);
+    }
+
+    // 2) Zone labels — left-aligned, always fully on-screen
+    const labelLeft = 8.0;
+    final labelData = [
+      (labelPredY, 'PREDADORES', predColor),
+      (labelConsY, 'CONSUMIDORES', consColor),
+      (labelProdY, 'PRODUTORES', prodColor),
+    ];
+
+    for (final (dbY, text, color) in labelData) {
+      final painter = TextPainter(
+        text: TextSpan(
+          text: text,
+          style: TextStyle(
+            color: color.withValues(alpha: 1),
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.5,
+            shadows: [
+              Shadow(
+                color: const Color(0xFF000000).withValues(alpha: 1),
+                blurRadius: 4,
+              ),
+            ],
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      painter.paint(
+        canvas,
+        Offset(labelLeft, dbYToPixel(dbY) - painter.height / 2),
+      );
     }
   }
 }

@@ -50,7 +50,7 @@ class ConnectionEffect extends Component {
       }
 
       final angle = rng.nextDouble() * 2 * pi;
-      final speed = 100 + rng.nextDouble() * 200;
+      final speed = 200 + rng.nextDouble() * 200;
       final radius = isCorrect
           ? (1.5 + rng.nextDouble() * 4.0)
           : (1.5 + rng.nextDouble() * 3.0);
