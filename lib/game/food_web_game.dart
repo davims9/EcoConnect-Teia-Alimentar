@@ -9,6 +9,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 import '../core/app_colors.dart';
 import '../core/asset_paths.dart';
+import '../models/organism.dart';
 import '../services/game_service.dart';
 import 'components/organism_component.dart';
 import 'components/connection_line.dart';
@@ -16,6 +17,42 @@ import 'components/drag_indicator.dart';
 import 'components/background_component.dart';
 import 'effects/connection_effect.dart';
 import 'systems/connection_system.dart';
+
+/// Vertical zones for organic positioning based on real-world habitat.
+enum _VerticalZone { top, middle, bottom }
+
+/// Assigns each organism (by id) to a vertical zone.
+///
+/// * top – birds / canopy dwellers
+/// * middle – branches / shrubs / mid-level
+/// * bottom – ground, grass, water, floor
+const _zoneMap = <int, _VerticalZone>{
+  // ── Campo ──
+  7: _VerticalZone.top,     // Aguia
+  1: _VerticalZone.bottom,  // Capim
+  2: _VerticalZone.bottom,  // Gafanhoto
+  3: _VerticalZone.bottom,  // Coelho
+  4: _VerticalZone.bottom,  // Sapo
+  5: _VerticalZone.bottom,  // Cobra
+  6: _VerticalZone.bottom,  // Raposa
+  // ── Floresta ──
+  13: _VerticalZone.top,    // Gaviao
+  8: _VerticalZone.middle,  // Arbusto
+  10: _VerticalZone.middle, // Aranha
+  9: _VerticalZone.bottom,  // Lagarta
+  11: _VerticalZone.bottom, // Sapo
+  12: _VerticalZone.bottom, // Cobra
+  14: _VerticalZone.bottom, // Veado
+  15: _VerticalZone.bottom, // Onça-pintada
+  // ── Pantanal ──
+  29: _VerticalZone.middle, // OnçaPintadaGalho
+  24: _VerticalZone.middle, // Caramujo
+  23: _VerticalZone.bottom, // PlantaAquatica
+  25: _VerticalZone.bottom, // Peixe
+  26: _VerticalZone.bottom, // Garça (stay on water / floor)
+  27: _VerticalZone.bottom, // Jacare
+  28: _VerticalZone.bottom, // CobraSucuri
+};
 
 class FoodWebGame extends FlameGame {
   final GameService gameService;
@@ -52,17 +89,30 @@ class FoodWebGame extends FlameGame {
     removeAll(children.whereType<OrganismComponent>().toList());
     removeAll(children.whereType<ConnectionLine>().toList());
     removeAll(children.whereType<DragIndicator>().toList());
-    removeAll(children.whereType<_TrophicLegendComponent>().toList());
-
     final phaseId = gameService.currentPhase?.id ?? 1;
     final bgPath = OrganismAssetPath.getBackgroundPath(phaseId);
     _background = BackgroundComponent(spritePath: bgPath, size: size);
     add(_background!);
 
-    // Trophic legend renders between background and organisms (behind sprites)
-    add(_TrophicLegendComponent(gameSize: size));
-
     final organisms = gameService.organisms;
+    final positions = _generateZonedPositions(organisms);
+
+    for (int i = 0; i < organisms.length; i++) {
+      final component = OrganismComponent(organism: organisms[i]);
+      component.position = positions[i];
+      component.scale = Vector2.zero();
+      organismComponents.add(component);
+      add(component);
+    }
+  }
+
+  static _VerticalZone _zoneFor(int? organismId) =>
+      _zoneMap[organismId] ?? _VerticalZone.bottom;
+
+  List<Vector2> _generateZonedPositions(List<Organism> organisms) {
+    if (organisms.isEmpty || size.x <= 0 || size.y <= 0) return [];
+
+    final random = Random();
 
     // Safe-area margins (pixels) to avoid AppBar (64px), bottom HUD (~60px),
     // sprite half-size (55px), and name label (~20px).
@@ -73,16 +123,66 @@ class FoodWebGame extends FlameGame {
     final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
     final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
 
-    for (final organism in organisms) {
-      final component = OrganismComponent(organism: organism);
-      component.position = Vector2(
-        sideMargin + organism.positionX * safeWidth,
-        topMargin + organism.positionY * safeHeight,
-      );
-      component.scale = Vector2.zero();
-      organismComponents.add(component);
-      add(component);
+    // Normalised Y ranges (0-1) inside the safe area for each zone
+    final zoneRanges = <_VerticalZone, Vector2>{
+      _VerticalZone.top: Vector2(0.00, 0.25),
+      _VerticalZone.middle: Vector2(0.30, 0.60),
+      _VerticalZone.bottom: Vector2(0.65, 0.95),
+    };
+
+    const minDist = 125.0;
+    const maxAttempts = 2000;
+
+    // Group indices by zone
+    final grouped = <_VerticalZone, List<int>>{
+      for (final z in _VerticalZone.values) z: <int>[],
+    };
+    for (int i = 0; i < organisms.length; i++) {
+      grouped[_zoneFor(organisms[i].id)]!.add(i);
     }
+
+    final result = List<Vector2>.filled(organisms.length, Vector2.zero());
+    final placed = <Vector2>[];
+
+    for (final zone in _VerticalZone.values) {
+      final indices = grouped[zone]!;
+      if (indices.isEmpty) continue;
+
+      final yMin = topMargin + zoneRanges[zone]!.x * safeHeight;
+      final yMax = topMargin + zoneRanges[zone]!.y * safeHeight;
+      final rangeY = yMax - yMin;
+
+      for (final idx in indices) {
+        bool ok = false;
+        for (int attempt = 0; attempt < maxAttempts && !ok; attempt++) {
+          final pos = Vector2(
+            sideMargin + random.nextDouble() * safeWidth,
+            yMin + random.nextDouble() * rangeY,
+          );
+          bool tooClose = false;
+          for (final p in placed) {
+            if ((pos - p).length < minDist) {
+              tooClose = true;
+              break;
+            }
+          }
+          if (!tooClose) {
+            placed.add(pos);
+            result[idx] = pos;
+            ok = true;
+          }
+        }
+        if (!ok) {
+          result[idx] = Vector2(
+            sideMargin + random.nextDouble() * safeWidth,
+            yMin,
+          );
+          placed.add(result[idx]);
+        }
+      }
+    }
+
+    return result;
   }
 
   Offset getOrganismCenter(OrganismComponent comp) {
@@ -270,91 +370,4 @@ class FoodWebGame extends FlameGame {
   }
 }
 
-/// Discreet trophic-level legend rendered between background and organisms.
-///
-/// Draws zone labels (PREDADORES / CONSUMIDORES / PRODUTORES) with
-/// trophic-matching colors and faint horizontal separator lines.
-class _TrophicLegendComponent extends Component {
-  final Vector2 gameSize;
 
-  _TrophicLegendComponent({required this.gameSize});
-
-  @override
-  void render(Canvas canvas) {
-    final size = gameSize;
-
-    // Safe-area margins — must match loadPhase()
-    const topMargin = 120.0;
-    const bottomMargin = 100.0;
-    const sideMargin = 60.0;
-    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
-
-    // DB Y values of each trophic band (from database_seed.dart)
-    const predatorTopY = 0.06;   // predador_topo
-    const tertiaryY = 0.28;      // consumidor_terciario
-    const secondaryY = 0.48;     // consumidor_secundario
-    const primaryY = 0.66;       // consumidor_primario
-    const producerY = 0.85;      // produtor
-
-    // Zone boundaries — midpoints between adjacent groups
-    const boundaryPredCons = (tertiaryY + secondaryY) / 2;   // ~0.38
-    const boundaryConsProd = (primaryY + producerY) / 2;      // ~0.755
-
-    // Zone label centers — midpoint of each zone
-    const labelPredY = (predatorTopY + boundaryPredCons) / 2;   // ~0.22
-    const labelConsY = (boundaryPredCons + boundaryConsProd) / 2; // ~0.5675
-    const labelProdY = (boundaryConsProd + producerY) / 2;        // ~0.8025
-
-    double dbYToPixel(double dbY) => topMargin + dbY * safeHeight;
-
-    // Trophic zone colors (matching organism indicators)
-    const predColor = Color(0xFFEF5350);
-    const consColor = Color(0xFFFFC107);
-    const prodColor = Color(0xFF4CAF50);
-
-    // 1) Faint horizontal separator lines across the safe play area
-    final linePaint = Paint()
-      ..color = const Color(0xFFFFFFFF).withValues(alpha: 0.80)
-      ..strokeWidth = 1.0;
-    final lineStartX = sideMargin;
-    final lineEndX = size.x - sideMargin;
-
-    for (final dbY in [boundaryPredCons, boundaryConsProd]) {
-      final y = dbYToPixel(dbY);
-      canvas.drawLine(Offset(lineStartX, y), Offset(lineEndX, y), linePaint);
-    }
-
-    // 2) Zone labels — left-aligned, always fully on-screen
-    const labelLeft = 8.0;
-    final labelData = [
-      (labelPredY, 'PREDADORES', predColor),
-      (labelConsY, 'CONSUMIDORES', consColor),
-      (labelProdY, 'PRODUTORES', prodColor),
-    ];
-
-    for (final (dbY, text, color) in labelData) {
-      final painter = TextPainter(
-        text: TextSpan(
-          text: text,
-          style: TextStyle(
-            color: color.withValues(alpha: 1),
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 1.5,
-            shadows: [
-              Shadow(
-                color: const Color(0xFF000000).withValues(alpha: 1),
-                blurRadius: 4,
-              ),
-            ],
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      painter.paint(
-        canvas,
-        Offset(labelLeft, dbYToPixel(dbY) - painter.height / 2),
-      );
-    }
-  }
-}
