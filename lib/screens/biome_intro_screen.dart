@@ -341,7 +341,7 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
     }
 
     if (!mounted) return;
-    navigator.push(
+    navigator.pushReplacement(
       MaterialPageRoute(builder: (_) => const GameScreen()),
     );
   }
