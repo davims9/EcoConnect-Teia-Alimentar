@@ -1,15 +1,16 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flame/components.dart';
+import 'package:flame/flame.dart';
 import 'package:flame/effects.dart';
 import 'package:flame/events.dart';
+import '../../core/app_colors.dart';
 import '../../core/asset_paths.dart';
 import '../../models/organism.dart';
 import '../food_web_game.dart';
 
-class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef {
+class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, HasGameRef {
   final Organism organism;
-  Sprite? sprite;
   double _bobPhase = 0;
   double _baseY = 0;
   double _targetGlow = 0;
@@ -25,7 +26,31 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
   Future<void> onLoad() async {
     await super.onLoad();
     final path = OrganismAssetPath.getPath(organism);
-    sprite = await Sprite.load(path);
+    final image = await Flame.images.load(path);
+    
+    final frameWidth = (image.width / 6).floorToDouble();
+    final frameHeight = image.height.toDouble();
+    final textureSize = Vector2(frameWidth, frameHeight);
+    
+    final sprites = [
+      for (int i = 0; i < 6; i++)
+        Sprite(
+          image,
+          srcPosition: Vector2(i * frameWidth, 0),
+          srcSize: textureSize,
+        )
+    ];
+    
+    final pingPongSprites = [
+      ...sprites,
+      for (int i = 4; i > 0; i--) sprites[i],
+    ];
+
+    animation = SpriteAnimation.spriteList(
+      pingPongSprites,
+      stepTime: 0.1,
+      loop: true,
+    );
 
     _baseY = position.y;
     _bobPhase = Random().nextDouble() * 2 * pi;
@@ -62,6 +87,42 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
 
   void setHighlight(bool highlighted) {
     _targetGlow = highlighted ? 1.0 : 0.0;
+  }
+
+  /// Shakes the organism left and right to indicate a wrong connection.
+  void addShakeEffect() {
+    disableIdleAnimations();
+    final original = position.clone();
+    const amplitude = 6.0;
+
+    void shakeStep(int remaining, double amp) {
+      if (remaining <= 0) {
+        add(MoveToEffect(
+          original,
+          EffectController(duration: 0.05, curve: Curves.easeInOut),
+        )..onComplete = () {
+            enableIdleAnimations();
+            _baseY = position.y;
+          });
+        return;
+      }
+
+      // Move left
+      add(MoveToEffect(
+        Vector2(original.x - amp, original.y),
+        EffectController(duration: 0.04, curve: Curves.easeInOut),
+      )..onComplete = () {
+          // Move right
+          add(MoveToEffect(
+            Vector2(original.x + amp, original.y),
+            EffectController(duration: 0.04, curve: Curves.easeInOut),
+          )..onComplete = () {
+              shakeStep(remaining - 1, amp * 0.65);
+            });
+        });
+    }
+
+    shakeStep(3, amplitude);
   }
 
   @override
@@ -107,17 +168,22 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
       canvas.drawCircle(Offset(size.x / 2, size.y / 2), size.x / 2 + 6, glowPaint);
     }
 
-    if (sprite != null) {
-      sprite!.render(canvas, size: size);
-    }
+    super.render(canvas);
 
     final namePainter = TextPainter(
       text: TextSpan(
         text: organism.name,
-        style: const TextStyle(
-          fontSize: 11,
+        style: TextStyle(
+          fontSize: 14,
           color: Colors.white,
           fontWeight: FontWeight.w700,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.7),
+              blurRadius: 3,
+              offset: Offset(1, 1),
+            ),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -127,8 +193,42 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
       canvas,
       Offset(
         (size.x - namePainter.width) / 2,
-        size.y + 2,
+        size.y + 5,
       ),
     );
+
+    // Small trophic level indicator bar (rounded rectangle below the name)
+    final indicatorColor = _colorForTrophicLevel(organism.trophicLevel);
+    final barPaint = Paint()
+      ..color = indicatorColor.withValues(alpha: 0.80);
+    const barWidth = 22.0;
+    const barHeight = 3.0;
+    final nameBottom = size.y + 5 + namePainter.height;
+    final barRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(size.x / 2, nameBottom + 5),
+        width: barWidth,
+        height: barHeight,
+      ),
+      const Radius.circular(1.5),
+    );
+    canvas.drawRRect(barRect, barPaint);
+  }
+
+  Color _colorForTrophicLevel(String level) {
+    switch (level) {
+      case 'produtor':
+        return AppColors.correct;
+      case 'consumidor_primario':
+        return const Color(0xFFFFC107);
+      case 'consumidor_secundario':
+        return const Color(0xFFFF9800);
+      case 'consumidor_terciario':
+        return const Color(0xFFF57C00);
+      case 'predador_topo':
+        return AppColors.connectionError;
+      default:
+        return Colors.white70;
+    }
   }
 }

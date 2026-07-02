@@ -75,6 +75,11 @@ class GameService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Loads only the organisms for a phase (display-only, no timer/game state).
+  Future<List<Organism>> getOrganismsForPhase(int phaseId) async {
+    return _organismRepository.getByPhaseId(phaseId);
+  }
+
   Future<bool> loadPhase(Phase phase) async {
     _isLoading = true;
     _errorMessage = null;
@@ -109,6 +114,14 @@ class GameService extends ChangeNotifier {
     if (sourceId == targetId) return;
     final key = '$sourceId-$targetId';
     _playerConnections.add(key);
+    notifyListeners();
+  }
+
+  /// Removes a previously-added connection so the player can retry.
+  void removeConnection(int sourceId, int targetId) {
+    if (_submitted || _phaseComplete) return;
+    final key = '$sourceId-$targetId';
+    _playerConnections.remove(key);
     notifyListeners();
   }
 
@@ -171,6 +184,25 @@ class GameService extends ChangeNotifier {
     try {
       await _scoreRepository.deleteAll();
     } catch (_) {}
+  }
+
+  /// Returns true if the connection [sourceId]-[targetId] (prey-predator) is correct.
+  bool isConnectionCorrect(int sourceId, int targetId) {
+    return _correctConnections.contains('$sourceId-$targetId');
+  }
+
+  /// Returns true if the reversed key [targetId]-[sourceId] exists in correct
+  /// connections (meaning the user dragged in the wrong direction).
+  bool isConnectionReversed(int sourceId, int targetId) {
+    return _correctConnections.contains('$targetId-$sourceId');
+  }
+
+  /// Looks up an organism by id in the current phase.
+  Organism? getOrganismById(int id) {
+    for (final o in _organisms) {
+      if (o.id == id) return o;
+    }
+    return null;
   }
 
   void clearError() {

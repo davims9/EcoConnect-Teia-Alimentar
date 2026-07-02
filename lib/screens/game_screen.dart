@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart' as flame;
 import 'package:provider/provider.dart';
@@ -17,12 +19,16 @@ class GameScreen extends StatefulWidget {
 class _GameScreenState extends State<GameScreen> {
   late FoodWebGame _game;
   bool _completionShown = false;
+  String? _connectionMessage;
+  bool _connectionIsCorrect = false;
+  int _connectionKey = 0;
 
   @override
   void initState() {
     super.initState();
     final service = context.read<GameService>();
     _game = FoodWebGame(gameService: service);
+    _game.onConnectionResult = _onConnectionResult;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await AudioService.instance.init();
       if (service.currentPhase != null) {
@@ -130,6 +136,13 @@ class _GameScreenState extends State<GameScreen> {
                     child: Stack(
                       children: [
                         flame.GameWidget(game: _game),
+                        if (_connectionMessage != null)
+                          Positioned(
+                            top: MediaQuery.of(context).size.height * 0.25,
+                            left: 24,
+                            right: 24,
+                            child: _buildConnectionMessage(),
+                          ),
                         Positioned(
                           bottom: 0,
                           left: 0,
@@ -372,6 +385,82 @@ class _GameScreenState extends State<GameScreen> {
 
   void _onSubmit(GameService service) {
     _game.submitPhase();
+  }
+
+  void _onConnectionResult(bool correct, String message) {
+    if (!mounted) return;
+    setState(() {
+      _connectionMessage = message;
+      _connectionIsCorrect = correct;
+      _connectionKey++;
+    });
+    Future.delayed(const Duration(seconds: 3), () {
+      if (!mounted) return;
+      setState(() => _connectionMessage = null);
+    });
+  }
+
+  Widget _buildConnectionMessage() {
+    final parts = (_connectionMessage ?? '').split('\n\n');
+    final title = parts.isNotEmpty ? parts[0] : '';
+    final body = parts.length > 1 ? parts[1] : '';
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, anim) => FadeTransition(
+        opacity: anim,
+        child: child,
+      ),
+      child: Container(
+        key: ValueKey(_connectionKey),
+        constraints: const BoxConstraints(maxWidth: 280),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: _connectionIsCorrect
+              ? const Color(0xFF1B5E20).withValues(alpha: 0.55)
+              : const Color(0xFFB71C1C).withValues(alpha: 0.55),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: (_connectionIsCorrect
+                      ? const Color(0xFF4CAF50)
+                      : const Color(0xFFEF5350))
+                  .withValues(alpha: 0.2),
+              blurRadius: 16,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                height: 1.3,
+              ),
+            ),
+            if (body.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                body,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.92),
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   void _showCompletionModal(BuildContext context, GameService service) {
