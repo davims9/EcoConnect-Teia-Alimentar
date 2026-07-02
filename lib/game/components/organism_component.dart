@@ -175,16 +175,22 @@ class OrganismComponent extends PositionComponent with DragCallbacks, HasGameRef
       ),
     );
 
-    // Small trophic level indicator dot
+    // Small trophic level indicator bar (rounded rectangle below the name)
     final indicatorColor = _colorForTrophicLevel(organism.trophicLevel);
-    final dotPaint = Paint()
-      ..color = indicatorColor.withValues(alpha: 0.85);
+    final barPaint = Paint()
+      ..color = indicatorColor.withValues(alpha: 0.80);
+    const barWidth = 22.0;
+    const barHeight = 3.0;
     final nameBottom = size.y + 5 + namePainter.height;
-    canvas.drawCircle(
-      Offset(size.x / 2, nameBottom + 5),
-      3.5,
-      dotPaint,
+    final barRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(
+        center: Offset(size.x / 2, nameBottom + 5),
+        width: barWidth,
+        height: barHeight,
+      ),
+      const Radius.circular(1.5),
     );
+    canvas.drawRRect(barRect, barPaint);
   }
 
   Color _colorForTrophicLevel(String level) {
