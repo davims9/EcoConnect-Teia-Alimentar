@@ -164,7 +164,7 @@ class _TutorialScreenState extends State<TutorialScreen>
 
   Widget _buildInstruction() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(32, 12, 32, 16),
       child: Text(
         'Experimente ligar a águia ao coelho.',
         textAlign: TextAlign.center,
@@ -180,9 +180,23 @@ class _TutorialScreenState extends State<TutorialScreen>
 
   Widget _buildGameArea() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
         child: flame.GameWidget(
           key: const ValueKey('tutorial_game'),
           game: _game,

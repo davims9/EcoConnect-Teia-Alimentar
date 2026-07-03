@@ -8,6 +8,7 @@ import '../core/app_colors.dart';
 import '../models/organism.dart';
 import '../services/audio_service.dart';
 import '../services/game_service.dart';
+import 'components/background_component.dart';
 import 'components/organism_component.dart';
 import 'components/connection_line.dart';
 import 'effects/connection_effect.dart';
@@ -28,8 +29,17 @@ class TutorialGame extends FoodWebGame {
   static _DummyGameService _createDummyService() => _DummyGameService();
 
   @override
+  Color backgroundColor() => const Color(0xFF0D2B1A);
+
+  @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    // ── Campo biome background with dark overlay ──
+    add(BackgroundComponent(
+      spritePath: 'cenarios/campo.png',
+      size: size,
+    ));
 
     // ── Águia (predator, id: 7, phaseId: 1 ─ Campo) ──
     const eagle = Organism(
@@ -59,6 +69,9 @@ class TutorialGame extends FoodWebGame {
 
     add(eagleComponent);
     add(rabbitComponent);
+
+    // Position after all components are added
+    _reposition();
   }
 
   @override
