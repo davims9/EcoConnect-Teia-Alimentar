@@ -29,6 +29,7 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
     _toggleAnimController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
+      value: 1.0,
     );
     _toggleAnim = CurvedAnimation(
       parent: _toggleAnimController,
@@ -63,26 +64,19 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
         duration: const Duration(milliseconds: 100),
         child: ScaleTransition(
           scale: _toggleAnim,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+          child: Container(
             width: 44,
             height: 44,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: _isPressed
-                  ? const Color(0xFF0D2B1A).withValues(alpha: 0.9)
-                  : const Color(0xFF1A3A24).withValues(alpha: 0.8),
+              color: const Color(0xFF1A3A24).withValues(alpha: 0.8),
               border: Border.all(
-                color: isMuted
-                    ? const Color(0xFFEF5350).withValues(alpha: 0.4)
-                    : const Color(0xFF2E7D32).withValues(alpha: 0.4),
+                color: const Color(0xFF2E7D32).withValues(alpha: 0.4),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: isMuted
-                      ? const Color(0xFFEF5350).withValues(alpha: 0.15)
-                      : const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                  color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -98,9 +92,7 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
                 isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
                 key: ValueKey(isMuted),
                 size: 20,
-                color: isMuted
-                    ? const Color(0xFFEF5350).withValues(alpha: 0.9)
-                    : const Color(0xFF81C784),
+                color: const Color(0xFF81C784),
               ),
             ),
           ),

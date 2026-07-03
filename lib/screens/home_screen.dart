@@ -105,18 +105,18 @@ class _HomeScreenState extends State<HomeScreen>
               child: SafeArea(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: SizedBox(
-                    height: h,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: h),
                     child: _buildContent(h, w),
                   ),
                 ),
               ),
             ),
           ),
-          // Audio toggle — top-right corner, respects system insets
+          // Audio toggle — top-right corner
           Positioned(
-            top: MediaQuery.of(context).padding.top + 12,
-            right: 16,
+            top: 24,
+            right: 24,
             child: const AudioToggleButton(),
           ),
         ],
@@ -381,15 +381,18 @@ class _HomeScreenState extends State<HomeScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: const Color(0xFF81C784)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
-                color: const Color(0xFFA5D6A7),
+            Icon(icon, size: 16, color: const Color(0xFF81C784)),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: const Color(0xFFA5D6A7),
+                ),
               ),
             ),
           ],
