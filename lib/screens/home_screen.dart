@@ -6,6 +6,7 @@ import 'ranking_screen.dart';
 import 'about_screen.dart';
 import '../core/app_constants.dart';
 import '../services/game_service.dart';
+import '../widgets/audio_toggle_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -111,6 +112,12 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
+          ),
+          // Audio toggle — top-right corner, respects system insets
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 16,
+            child: const AudioToggleButton(),
           ),
         ],
       ),
