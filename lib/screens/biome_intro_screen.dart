@@ -27,22 +27,30 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
     'campo': _BiomeInfo(
       name: 'Campo',
       description:
-          'O campo \u00e9 um ambiente aberto e ensolarado, com muita vegeta\u00e7\u00e3o rasteira. Aqui, diferentes animais e plantas dependem uns dos outros para se alimentar.',
+          'O campo \u00e9 um ambiente aberto e ensolarado, com muita vegeta\u00e7\u00e3o rasteira. Aqui, plantas e animais dependem uns dos outros para sobreviver.',
+      observeText:
+          'Observe como a energia come\u00e7a nas plantas. Ser\u00e1 que um animal pode ser ca\u00e7ador e tamb\u00e9m presa?',
     ),
     'floresta': _BiomeInfo(
       name: 'Floresta',
       description:
           'A floresta \u00e9 cheia de \u00e1rvores altas e sombra, abrigando uma grande variedade de seres vivos. Cada organismo tem seu papel na teia alimentar.',
+      observeText:
+          'Na floresta, muitas rela\u00e7\u00f5es alimentares se cruzam. Observe como diferentes animais dependem uns dos outros.',
     ),
     'oceano': _BiomeInfo(
       name: 'Oceano',
       description:
           'O oceano \u00e9 um mundo azul e profundo, cheio de vida. Das algas aos grandes tubar\u00f5es, todos est\u00e3o conectados na cadeia alimentar.',
+      observeText:
+          'Alguns dos menores seres do oceano sustentam animais muito maiores. Consegue descobrir como a energia chega at\u00e9 os grandes predadores?',
     ),
     'pantanal': _BiomeInfo(
       name: 'Pantanal',
       description:
           'O pantanal \u00e9 uma grande plan\u00edcie alagada, com uma das maiores biodiversidades do planeta. Plantas, peixes e jacar\u00e9s convivem em equil\u00edbrio.',
+      observeText:
+          'No Pantanal, a diversidade de seres vivos cria muitas conex\u00f5es. Observe como a vida na \u00e1gua, na terra e no ar se relaciona.',
     ),
   };
 
@@ -195,7 +203,12 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
+          // Observe & Discover card
+          if (info.observeText.isNotEmpty) ...[
+            _buildObserveCard(info.observeText),
+            const SizedBox(height: 24),
+          ],
           // Organisms section label
           Text(
             'ORGANISMOS ENCONTRADOS',
@@ -213,6 +226,58 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
           // Explore button
           _buildExploreButton(),
           const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildObserveCard(String observeText) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A3A24).withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF4CAF50).withValues(alpha: 0.30),
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_rounded,
+                size: 20,
+                color: const Color(0xFF81C784).withValues(alpha: 0.9),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'OBSERVE E DESCUBRA',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 3,
+                  color: const Color(0xFFA5D6A7).withValues(alpha: 0.95),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            observeText,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: const Color(0xFFE8F5E9).withValues(alpha: 0.92),
+              height: 1.55,
+            ),
+          ),
         ],
       ),
     );
@@ -248,33 +313,33 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
     final spritePath = 'assets/images/${OrganismAssetPath.getPath(organism)}';
 
     return SizedBox(
-      width: 72,
+      width: 88,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           // Sprite image
           Container(
-            width: 60,
-            height: 60,
+            width: 64,
+            height: 64,
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A3A24).withValues(alpha: 0.6),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFF1A3A24).withValues(alpha: 0.65),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.35),
-                width: 1,
+                color: const Color(0xFF2E7D32).withValues(alpha: 0.40),
+                width: 1.5,
               ),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               child: AnimatedSpriteThumbnail(
                 imagePath: spritePath,
-                size: 52,
+                size: 56,
                 organismName: organism.name,
               ),
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           // Name below sprite
           Text(
             organism.name,
@@ -282,10 +347,10 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
               color: const Color(0xFFE8F5E9).withValues(alpha: 0.9),
-              height: 1.2,
+              height: 1.25,
               shadows: [
                 Shadow(
                   color: Colors.black.withValues(alpha: 0.4),
@@ -339,8 +404,13 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
 class _BiomeInfo {
   final String name;
   final String description;
+  final String observeText;
 
-  const _BiomeInfo({required this.name, required this.description});
+  const _BiomeInfo({
+    required this.name,
+    required this.description,
+    this.observeText = '',
+  });
 }
 
 /// Reusable green gradient button with press animation.
