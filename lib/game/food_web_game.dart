@@ -23,35 +23,43 @@ enum _VerticalZone { top, middle, bottom }
 
 /// Assigns each organism (by id) to a vertical zone.
 ///
-/// * top – birds / canopy dwellers
-/// * middle – branches / shrubs / mid-level
-/// * bottom – ground, grass, water, floor
+/// * top    – aves / copa das árvores (1/3 superior da tela)
+/// * middle – galhos / arbustos / nível médio
+/// * bottom – solo, chão, água (1/3 inferior da tela)
 const _zoneMap = <int, _VerticalZone>{
-  // ── Campo ──
-  7: _VerticalZone.top,     // Aguia
-  1: _VerticalZone.bottom,  // Capim
-  2: _VerticalZone.bottom,  // Gafanhoto
-  3: _VerticalZone.bottom,  // Coelho
-  4: _VerticalZone.bottom,  // Sapo
-  5: _VerticalZone.bottom,  // Cobra
-  6: _VerticalZone.bottom,  // Raposa
-  // ── Floresta ──
-  13: _VerticalZone.top,    // Gaviao
-  8: _VerticalZone.middle,  // Arbusto
-  10: _VerticalZone.middle, // Aranha
-  9: _VerticalZone.bottom,  // Lagarta
-  11: _VerticalZone.bottom, // Sapo
-  12: _VerticalZone.bottom, // Cobra
-  14: _VerticalZone.bottom, // Veado
-  15: _VerticalZone.bottom, // Onça-pintada
-  // ── Pantanal ──
-  29: _VerticalZone.middle, // OnçaPintadaGalho
-  24: _VerticalZone.middle, // Caramujo
-  23: _VerticalZone.bottom, // PlantaAquatica
-  25: _VerticalZone.bottom, // Peixe
-  26: _VerticalZone.bottom, // Garça (stay on water / floor)
-  27: _VerticalZone.bottom, // Jacare
-  28: _VerticalZone.bottom, // CobraSucuri
+  // ══════ Campo ══════
+  7: _VerticalZone.top,    // Águia — ave ✅ topo
+  1: _VerticalZone.bottom, // Capim — planta do solo ✅
+  2: _VerticalZone.bottom, // Gafanhoto — solo ✅
+  3: _VerticalZone.bottom, // Coelho — solo ✅
+  4: _VerticalZone.bottom, // Sapo — solo ✅
+  5: _VerticalZone.bottom, // Cobra — solo ✅
+  6: _VerticalZone.bottom, // Raposa — solo ✅
+  // ══════ Floresta ══════
+  13: _VerticalZone.top,   // Gavião — ave ✅ topo
+  8: _VerticalZone.middle, // Arbusto — nível médio ✅
+  10: _VerticalZone.middle,// Aranha — teia/galhos ✅
+  9: _VerticalZone.bottom, // Lagarta — solo/plantas baixas ✅
+  11: _VerticalZone.bottom,// Sapo — solo ✅
+  12: _VerticalZone.bottom,// Cobra — solo ✅
+  14: _VerticalZone.bottom,// Veado — solo ✅
+  15: _VerticalZone.bottom,// Onça-pintada — solo ✅
+  // ══════ Oceano ══════
+  16: _VerticalZone.bottom,// Fitoplâncton — profundo ✅
+  17: _VerticalZone.bottom,// Alga — profundo ✅
+  18: _VerticalZone.bottom,// Camarão — fundo ✅
+  19: _VerticalZone.middle, // Sardinha — meio ✅
+  20: _VerticalZone.middle, // Polvo — meio ✅
+  21: _VerticalZone.middle, // Atum — meio ✅
+  22: _VerticalZone.top,   // Tubarão — topo ✅
+  // ══════ Pantanal ══════
+  23: _VerticalZone.bottom,// Planta aquática — água/solo ✅
+  24: _VerticalZone.bottom,// Caramujo — solo/água ✅
+  25: _VerticalZone.bottom,// Peixe — água ✅
+  26: _VerticalZone.bottom,// Garça — ave, mas vive no solo/água 🟢
+  27: _VerticalZone.bottom,// Jacaré — água/solo ✅
+  28: _VerticalZone.bottom,// Cobra sucuri — água/solo ✅
+  29: _VerticalZone.middle, // Onça-pintada — galho/nível médio ✅
 };
 
 class FoodWebGame extends FlameGame {
@@ -114,8 +122,6 @@ class FoodWebGame extends FlameGame {
 
     final random = Random();
 
-    // Safe-area margins (pixels) to avoid AppBar (64px), bottom HUD (~60px),
-    // sprite half-size (55px), and name label (~20px).
     const topMargin = 120.0;
     const bottomMargin = 100.0;
     const sideMargin = 60.0;
@@ -123,17 +129,16 @@ class FoodWebGame extends FlameGame {
     final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
     final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
 
-    // Normalised Y ranges (0-1) inside the safe area for each zone
     final zoneRanges = <_VerticalZone, Vector2>{
-      _VerticalZone.top: Vector2(0.00, 0.25),
-      _VerticalZone.middle: Vector2(0.30, 0.60),
-      _VerticalZone.bottom: Vector2(0.65, 0.95),
+      _VerticalZone.top: Vector2(0.00, 0.30),
+      _VerticalZone.middle: Vector2(0.33, 0.63),
+      _VerticalZone.bottom: Vector2(0.66, 1.00),
     };
 
-    const minDist = 125.0;
-    const maxAttempts = 2000;
+    const organismSize = 110.0;
+    const edgeGap = 15.0;
+    final idealDist = organismSize + edgeGap; // 125.0
 
-    // Group indices by zone
     final grouped = <_VerticalZone, List<int>>{
       for (final z in _VerticalZone.values) z: <int>[],
     };
@@ -142,7 +147,6 @@ class FoodWebGame extends FlameGame {
     }
 
     final result = List<Vector2>.filled(organisms.length, Vector2.zero());
-    final placed = <Vector2>[];
 
     for (final zone in _VerticalZone.values) {
       final indices = grouped[zone]!;
@@ -150,40 +154,146 @@ class FoodWebGame extends FlameGame {
 
       final yMin = topMargin + zoneRanges[zone]!.x * safeHeight;
       final yMax = topMargin + zoneRanges[zone]!.y * safeHeight;
-      final rangeY = yMax - yMin;
+      final zoneHeight = yMax - yMin;
 
-      for (final idx in indices) {
-        bool ok = false;
-        for (int attempt = 0; attempt < maxAttempts && !ok; attempt++) {
-          final pos = Vector2(
-            sideMargin + random.nextDouble() * safeWidth,
-            yMin + random.nextDouble() * rangeY,
-          );
-          bool tooClose = false;
-          for (final p in placed) {
-            if ((pos - p).length < minDist) {
-              tooClose = true;
-              break;
-            }
-          }
-          if (!tooClose) {
-            placed.add(pos);
-            result[idx] = pos;
-            ok = true;
-          }
+      final count = indices.length;
+
+      // --- Calculate grid dimensions ---
+      // Maximum columns that fit horizontally with ideal spacing
+      final maxCols = ((safeWidth - organismSize) / idealDist).floor() + 1;
+
+      int cols;
+      int rows;
+      double spacingX;
+      double spacingY;
+
+      if (count <= 1) {
+        cols = 1;
+        rows = 1;
+        spacingX = 0;
+        spacingY = 0;
+      } else if (count <= maxCols) {
+        // Single row with ideal spacing
+        cols = count;
+        rows = 1;
+        spacingX = (safeWidth - organismSize) / (count - 1);
+        spacingY = 0;
+      } else {
+        // Check how many rows the zone can actually accommodate
+        // Minimum vertical center-to-center for 2 rows: organismSize (touching)
+        final maxRowsThatFit = (zoneHeight / organismSize).floor();
+        final idealRows = (count + maxCols - 1) ~/ maxCols;
+
+        if (idealRows <= maxRowsThatFit) {
+          // Zone is tall enough for the ideal number of rows
+          cols = maxCols;
+          rows = idealRows;
+          spacingX = (safeWidth - organismSize) / (maxCols - 1);
+          final neededVertical = organismSize + idealDist * (rows - 1);
+          spacingY = neededVertical <= zoneHeight ? idealDist : (zoneHeight - organismSize) / (rows - 1);
+        } else if (maxRowsThatFit >= 2) {
+          // Zone can fit some rows, but not the ideal amount
+          rows = maxRowsThatFit;
+          cols = (count + rows - 1) ~/ rows;
+          spacingX = (safeWidth - organismSize) / (cols - 1);
+          spacingY = (zoneHeight - organismSize) / (rows - 1);
+        } else {
+          // Zone too shallow for 2 rows → single row with tighter spacing
+          rows = 1;
+          cols = count;
+          // Reduce horizontal spacing so all fit in one row (never below organismSize)
+          spacingX = (safeWidth - organismSize) / (count - 1);
+          spacingY = 0;
         }
-        if (!ok) {
-          result[idx] = Vector2(
-            sideMargin + random.nextDouble() * safeWidth,
-            yMin,
-          );
-          placed.add(result[idx]);
+      }
+
+      // Final safety: spacing never below organismSize (guarantees no visual overlap)
+      if (spacingX < organismSize && cols > 1) {
+        spacingX = organismSize;
+      }
+      if (spacingY < organismSize && rows > 1) {
+        if ((rows - 1) * organismSize + organismSize <= zoneHeight) {
+          // Keep as-is, organisms at least edge-to-edge
+        } else {
+          // Even minimum vertical spacing doesn't fit → force single row
+          rows = 1;
+          cols = count;
+          spacingX = (safeWidth - organismSize) / (count - 1);
+          spacingY = 0;
+          if (spacingX < organismSize && cols > 1) spacingX = organismSize;
         }
+      }
+
+      // --- Distribute row items equally (last row may have fewer items) ---
+      final itemsPerRow = <int>[];
+      for (int r = 0; r < rows; r++) {
+        final items = (r < rows - 1)
+            ? cols
+            : count - r * cols;
+        itemsPerRow.add(items);
+      }
+
+      // Build a shuffled list of (row, col) for random-but-spread placement
+      final assignments = <(int row, int col)>[];
+      for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < itemsPerRow[r]; c++) {
+          assignments.add((r, c));
+        }
+      }
+      assignments.shuffle(random);
+
+      // --- Place organisms ---
+      for (int s = 0; s < count; s++) {
+        final idx = indices[s];
+        final (int row, int col) = assignments[s];
+
+        final itemsInThisRow = itemsPerRow[row];
+        final double thisRowSpacingX;
+        if (itemsInThisRow <= 1) {
+          thisRowSpacingX = 0;
+        } else {
+          thisRowSpacingX = (safeWidth - organismSize) / (itemsInThisRow - 1);
+        }
+
+        // Center X of this item in its row
+        double posX = sideMargin + organismSize / 2 + col * thisRowSpacingX;
+
+        // Center Y
+        double posY;
+        if (rows <= 1) {
+          posY = yMin + zoneHeight / 2;
+        } else {
+          posY = yMin + organismSize / 2 + row * spacingY;
+        }
+
+        // Apply tiny jitter for visual variety (never enough to cause overlap)
+        if (thisRowSpacingX > organismSize + 5) {
+          final jitterX = (thisRowSpacingX - organismSize) * 0.3;
+          posX += (random.nextDouble() - 0.5) * jitterX;
+        }
+        if (spacingY > organismSize + 5) {
+          final jitterY = (spacingY - organismSize) * 0.3;
+          posY += (random.nextDouble() - 0.5) * jitterY;
+        }
+
+        // Clamp inside safe-area zone
+        posX = posX.clamp(
+          sideMargin + organismSize / 2,
+          sideMargin + safeWidth - organismSize / 2,
+        );
+        posY = posY.clamp(
+          yMin + organismSize / 2,
+          yMax - organismSize / 2,
+        );
+
+        result[idx] = Vector2(posX, posY);
       }
     }
 
     return result;
   }
+
+
 
   Offset getOrganismCenter(OrganismComponent comp) {
     return comp.position.toOffset();
