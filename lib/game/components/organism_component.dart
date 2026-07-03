@@ -27,11 +27,11 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
     await super.onLoad();
     final path = OrganismAssetPath.getPath(organism);
     final image = await Flame.images.load(path);
-    
+
     final frameWidth = (image.width / 6).floorToDouble();
     final frameHeight = image.height.toDouble();
     final textureSize = Vector2(frameWidth, frameHeight);
-    
+
     final sprites = [
       for (int i = 0; i < 6; i++)
         Sprite(
@@ -40,7 +40,7 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
           srcSize: textureSize,
         )
     ];
-    
+
     final pingPongSprites = [
       ...sprites,
       for (int i = 4; i > 0; i--) sprites[i],
