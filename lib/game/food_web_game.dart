@@ -18,6 +18,7 @@ import 'components/drag_indicator.dart';
 import 'components/background_component.dart';
 import 'effects/connection_effect.dart';
 import 'systems/connection_system.dart';
+import 'habitat_layout.dart';
 
 /// Vertical zones for organic positioning based on real-world habitat.
 enum _VerticalZone { top, middle, bottom }
@@ -114,7 +115,8 @@ class FoodWebGame extends FlameGame {
       size.y / 6,
     ).clamp(minOrganismSize, maxOrganismSize);
 
-    final positions = _generateZonedPositions(organisms, dynamicSize);
+    final biome = gameService.currentPhase?.biome ?? '';
+    final positions = _generateZonedPositions(organisms, dynamicSize, biome);
 
     for (int i = 0; i < organisms.length; i++) {
       final component = OrganismComponent(
@@ -132,6 +134,67 @@ class FoodWebGame extends FlameGame {
       _zoneMap[organismId] ?? _VerticalZone.bottom;
 
   List<Vector2> _generateZonedPositions(
+    List<Organism> organisms,
+    double organismSize,
+    String biome,
+  ) {
+    if (organisms.isEmpty || size.x <= 0 || size.y <= 0) return [];
+
+    // ── Use explicit habitat layout for Campo, Floresta, Pantanal ──
+    final layout = HabitatLayout.getPositions(biome);
+    if (layout != null) {
+      return _applyHabitatLayout(organisms, organismSize, layout);
+    }
+
+    // ── Fallback: zone-based grid (used for Oceano) ──
+    return _generateGridPositions(organisms, organismSize);
+  }
+
+  /// Places organisms using explicit per-ID normalized positions from
+  /// [HabitatLayout]. Each position is mapped from normalized (0–1) space
+  /// into the safe area and clamped to prevent clipping.
+  List<Vector2> _applyHabitatLayout(
+    List<Organism> organisms,
+    double organismSize,
+    Map<int, Offset> layout,
+  ) {
+    final result = List<Vector2>.filled(organisms.length, Vector2.zero());
+
+    final double sideMargin = (size.x * 0.05).clamp(15.0, 60.0);
+    final double topMargin = (size.y * 0.15).clamp(60.0, 120.0);
+    final double bottomMargin = (size.y * 0.1).clamp(50.0, 100.0);
+
+    final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(
+      200.0,
+      double.infinity,
+    );
+
+    final halfSize = organismSize / 2;
+
+    for (int i = 0; i < organisms.length; i++) {
+      final org = organisms[i];
+      final slot = layout[org.id];
+      if (slot == null) {
+        result[i] = Vector2(sideMargin + safeWidth / 2, topMargin + safeHeight * 0.5);
+        continue;
+      }
+
+      final px = sideMargin + slot.dx * safeWidth;
+      final py = topMargin + slot.dy * safeHeight;
+
+      result[i] = Vector2(
+        px.clamp(sideMargin + halfSize, sideMargin + safeWidth - halfSize),
+        py.clamp(topMargin + halfSize, topMargin + safeHeight - halfSize),
+      );
+    }
+
+    return result;
+  }
+
+  /// Zone-based grid positioning (original logic, unchanged).
+  /// Used as fallback for Oceano.
+  List<Vector2> _generateGridPositions(
     List<Organism> organisms,
     double organismSize,
   ) {
@@ -178,7 +241,6 @@ class FoodWebGame extends FlameGame {
       final count = indices.length;
 
       // --- Calculate grid dimensions ---
-      // Maximum columns that fit horizontally with ideal spacing
       final maxCols = ((safeWidth - organismSize) / idealDist).floor() + 1;
 
       int cols;
@@ -192,19 +254,15 @@ class FoodWebGame extends FlameGame {
         spacingX = 0;
         spacingY = 0;
       } else if (count <= maxCols) {
-        // Single row with ideal spacing
         cols = count;
         rows = 1;
         spacingX = (safeWidth - organismSize) / (count - 1);
         spacingY = 0;
       } else {
-        // Check how many rows the zone can actually accommodate
-        // Minimum vertical center-to-center for 2 rows: organismSize (touching)
         final maxRowsThatFit = (zoneHeight / organismSize).floor();
         final idealRows = (count + maxCols - 1) ~/ maxCols;
 
         if (idealRows <= maxRowsThatFit) {
-          // Zone is tall enough for the ideal number of rows
           cols = maxCols;
           rows = idealRows;
           spacingX = (safeWidth - organismSize) / (maxCols - 1);
@@ -213,38 +271,31 @@ class FoodWebGame extends FlameGame {
               ? idealDist
               : (zoneHeight - organismSize) / (rows - 1);
         } else if (maxRowsThatFit >= 2) {
-          // Zone can fit some rows, but not the ideal amount
           rows = maxRowsThatFit;
           cols = (count + rows - 1) ~/ rows;
           spacingX = (safeWidth - organismSize) / (cols - 1);
           spacingY = (zoneHeight - organismSize) / (rows - 1);
         } else {
-          // Zone too shallow for 2 rows → single row with tighter spacing
           rows = 1;
           cols = count;
-          // Reduce horizontal spacing so all fit in one row (never below organismSize)
           spacingX = (safeWidth - organismSize) / (count - 1);
           spacingY = 0;
         }
       }
 
-      // Final safety: se ainda assim as linhas forem muito altas, comprime uniformemente
       if (spacingY < organismSize && rows > 1) {
         if ((rows - 1) * organismSize + organismSize > zoneHeight) {
-          // Tenta ajustar o spacingY para caber de qualquer forma
           spacingY = (zoneHeight - organismSize) / (rows - 1);
           if (spacingY < 0) spacingY = 0;
         }
       }
 
-      // --- Distribute row items equally (last row may have fewer items) ---
       final itemsPerRow = <int>[];
       for (int r = 0; r < rows; r++) {
         final items = (r < rows - 1) ? cols : count - r * cols;
         itemsPerRow.add(items);
       }
 
-      // Build a shuffled list of (row, col) for random-but-spread placement
       final assignments = <(int row, int col)>[];
       for (int r = 0; r < rows; r++) {
         for (int c = 0; c < itemsPerRow[r]; c++) {
@@ -253,7 +304,6 @@ class FoodWebGame extends FlameGame {
       }
       assignments.shuffle(random);
 
-      // --- Place organisms ---
       for (int s = 0; s < count; s++) {
         final idx = indices[s];
         final (int row, int col) = assignments[s];
@@ -266,10 +316,8 @@ class FoodWebGame extends FlameGame {
           thisRowSpacingX = (safeWidth - organismSize) / (itemsInThisRow - 1);
         }
 
-        // Center X of this item in its row
         double posX = sideMargin + organismSize / 2 + col * thisRowSpacingX;
 
-        // Center Y
         double posY;
         if (rows <= 1) {
           posY = yMin + zoneHeight / 2;
@@ -277,7 +325,6 @@ class FoodWebGame extends FlameGame {
           posY = yMin + organismSize / 2 + row * spacingY;
         }
 
-        // Apply tiny jitter for visual variety (never enough to cause overlap)
         if (thisRowSpacingX > organismSize + 5) {
           final jitterX = (thisRowSpacingX - organismSize) * 0.3;
           posX += (random.nextDouble() - 0.5) * jitterX;
@@ -287,7 +334,6 @@ class FoodWebGame extends FlameGame {
           posY += (random.nextDouble() - 0.5) * jitterY;
         }
 
-        // Clamp inside safe-area zone
         posX = posX.clamp(
           sideMargin + organismSize / 2,
           sideMargin + safeWidth - organismSize / 2,
