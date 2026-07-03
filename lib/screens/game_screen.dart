@@ -464,6 +464,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showCompletionModal(BuildContext context, GameService service) {
+    AudioService.instance.playComplete();
     final totalCorrect = service.correctConnections.length;
     final correctCount = totalCorrect - service.errors;
     final stars = totalCorrect == 0

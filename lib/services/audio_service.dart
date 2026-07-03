@@ -33,6 +33,24 @@ class AudioService {
     } catch (_) {}
   }
 
+  void playCorrect() {
+    try {
+      FlameAudio.play('geral/acertou.mp3', volume: 1.0);
+    } catch (_) {}
+  }
+
+  void playWrong() {
+    try {
+      FlameAudio.play('geral/errou.mp3', volume: 1.0);
+    } catch (_) {}
+  }
+
+  void playComplete() {
+    try {
+      FlameAudio.play('geral/terminou.mp3', volume: 1.0);
+    } catch (_) {}
+  }
+
   void dispose() {
     stopAmbient();
     _initialized = false;
