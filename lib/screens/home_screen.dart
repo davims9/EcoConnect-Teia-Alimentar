@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'phases_screen.dart';
 import 'ranking_screen.dart';
 import 'about_screen.dart';
+import 'tutorial_screen.dart';
 import '../core/app_constants.dart';
 import '../services/game_service.dart';
 import '../widgets/audio_toggle_button.dart';
@@ -330,6 +331,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   Widget _buildSecondaryButtons({double padding = 40}) {
+    final gap = padding < 30 ? 8.0 : 10.0;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: padding),
       child: Row(
@@ -341,7 +343,15 @@ class _HomeScreenState extends State<HomeScreen>
               onTap: () => _navigateToRanking(context),
             ),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: gap),
+          Expanded(
+            child: _buildSecondaryButton(
+              label: 'COMO JOGAR',
+              icon: Icons.school_rounded,
+              onTap: () => _navigateToTutorial(context),
+            ),
+          ),
+          SizedBox(width: gap),
           Expanded(
             child: _buildSecondaryButton(
               label: 'SOBRE',
@@ -541,6 +551,13 @@ class _HomeScreenState extends State<HomeScreen>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AboutScreen()),
+    );
+  }
+
+  void _navigateToTutorial(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const TutorialScreen()),
     );
   }
 }
