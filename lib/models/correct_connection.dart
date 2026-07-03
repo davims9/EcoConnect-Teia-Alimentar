@@ -12,11 +12,11 @@ class CorrectConnection {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'phase_id': phaseId,
-        'source_id': sourceId,
-        'target_id': targetId,
-      };
+    'id': id,
+    'phase_id': phaseId,
+    'source_id': sourceId,
+    'target_id': targetId,
+  };
 
   factory CorrectConnection.fromMap(Map<String, dynamic> map) =>
       CorrectConnection(

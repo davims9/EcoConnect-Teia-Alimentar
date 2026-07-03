@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../core/asset_paths.dart';
 import '../models/organism.dart';
 import '../models/phase.dart';
 import '../services/game_service.dart';
+import '../widgets/hover_button.dart';
 import 'game_screen.dart';
 
 class BiomeIntroScreen extends StatefulWidget {
@@ -118,7 +120,7 @@ class _BiomeIntroScreenState extends State<BiomeIntroScreen> {
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
       child: Row(
         children: [
-          GestureDetector(
+          HoverButton(
             onTap: () => Navigator.of(context).pop(),
             child: Container(
               width: 40,
@@ -354,20 +356,25 @@ class _GradientButton extends StatefulWidget {
 
 class _GradientButtonState extends State<_GradientButton> {
   bool _isPressed = false;
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: widget.onTap,
-      child: AnimatedScale(
-        scale: _isPressed ? 0.94 : 1.0,
-        duration: const Duration(milliseconds: 100),
-        child: AnimatedContainer(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: widget.onTap,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.94 : (_isHovered ? 1.03 : 1.0),
           duration: const Duration(milliseconds: 100),
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: _isPressed
@@ -406,6 +413,7 @@ class _GradientButtonState extends State<_GradientButton> {
             ),
           ),
         ),
+      ),
       ),
     );
   }
@@ -497,3 +505,4 @@ class _AnimatedSpriteThumbnailState extends State<AnimatedSpriteThumbnail> {
     );
   }
 }
+

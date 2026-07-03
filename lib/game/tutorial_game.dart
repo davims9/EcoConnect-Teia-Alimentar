@@ -36,10 +36,7 @@ class TutorialGame extends FoodWebGame {
     await super.onLoad();
 
     // ── Campo biome background with dark overlay ──
-    add(BackgroundComponent(
-      spritePath: 'cenarios/campo.png',
-      size: size,
-    ));
+    add(BackgroundComponent(spritePath: 'cenarios/campo.png', size: size));
 
     // ── Águia (predator, id: 7, phaseId: 1 ─ Campo) ──
     const eagle = Organism(
@@ -145,7 +142,7 @@ class TutorialGame extends FoodWebGame {
         onConnectionResult?.call(
           false,
           '🌿 Quase!\n\nA águia é o predador. '
-              'Tente ligar Águia → Coelho.',
+          'Tente ligar Águia → Coelho.',
         );
         _scheduleWrongLineRemoval(line, preyId, predatorId);
       }
@@ -158,7 +155,7 @@ class TutorialGame extends FoodWebGame {
         onConnectionResult?.call(
           false,
           '❌ Não é essa conexão!\n\n'
-              'Ligue a Águia até o Coelho.',
+          'Ligue a Águia até o Coelho.',
         );
         _scheduleWrongLineRemoval(line, preyId, predatorId);
       }
@@ -173,7 +170,9 @@ class TutorialGame extends FoodWebGame {
   }
 
   void _scheduleWrongLineRemoval(
-    ConnectionLine line, int sourceId, int targetId,
+    ConnectionLine line,
+    int sourceId,
+    int targetId,
   ) {
     Future.delayed(const Duration(milliseconds: 2800), () {
       if (!line.isLoaded) return;
@@ -183,7 +182,8 @@ class TutorialGame extends FoodWebGame {
   }
 
   void _animatePredatorLunge(
-    OrganismComponent predator, OrganismComponent prey,
+    OrganismComponent predator,
+    OrganismComponent prey,
   ) {
     predator.disableIdleAnimations();
     final original = predator.position.clone();
@@ -194,14 +194,16 @@ class TutorialGame extends FoodWebGame {
 
     predator.add(
       MoveToEffect(
-        lungeTarget,
-        EffectController(duration: 0.45, curve: Curves.easeOut),
-      )..onComplete = () {
+          lungeTarget,
+          EffectController(duration: 0.45, curve: Curves.easeOut),
+        )
+        ..onComplete = () {
           predator.add(
             MoveToEffect(
-              original,
-              EffectController(duration: 1.0, curve: Curves.easeInOut),
-            )..onComplete = () {
+                original,
+                EffectController(duration: 1.0, curve: Curves.easeInOut),
+              )
+              ..onComplete = () {
                 predator.enableIdleAnimations();
               },
           );

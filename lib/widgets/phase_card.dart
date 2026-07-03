@@ -24,8 +24,12 @@ class PhaseCard extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF1A3A24).withValues(alpha: isUnlocked ? 0.9 : 0.6),
-                  const Color(0xFF0D2B1A).withValues(alpha: isUnlocked ? 0.8 : 0.5),
+                  const Color(
+                    0xFF1A3A24,
+                  ).withValues(alpha: isUnlocked ? 0.9 : 0.6),
+                  const Color(
+                    0xFF0D2B1A,
+                  ).withValues(alpha: isUnlocked ? 0.8 : 0.5),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -163,13 +167,14 @@ class PhaseCard extends StatelessWidget {
         ),
         boxShadow: [
           if (isUnlocked)
-            BoxShadow(
-              color: iconColor.withValues(alpha: 0.2),
-              blurRadius: 8,
-            ),
+            BoxShadow(color: iconColor.withValues(alpha: 0.2), blurRadius: 8),
         ],
       ),
-      child: Icon(icon, color: iconColor.withValues(alpha: isUnlocked ? 1 : 0.5), size: 28),
+      child: Icon(
+        icon,
+        color: iconColor.withValues(alpha: isUnlocked ? 1 : 0.5),
+        size: 28,
+      ),
     );
   }
 }

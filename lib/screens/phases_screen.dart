@@ -143,8 +143,11 @@ class _PhasesScreenState extends State<PhasesScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.error_outline,
-                      size: 48, color: const Color(0xFFEF5350).withValues(alpha: 0.7)),
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: const Color(0xFFEF5350).withValues(alpha: 0.7),
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     service.errorMessage!,
@@ -235,7 +238,9 @@ class _PhasesScreenState extends State<PhasesScreen>
     if (!isUnlocked && phase.id != 1) {
       messenger.showSnackBar(
         SnackBar(
-          content: const Text('Complete a fase anterior com pelo menos 1 estrela!'),
+          content: const Text(
+            'Complete a fase anterior com pelo menos 1 estrela!',
+          ),
           backgroundColor: const Color(0xFF1B5E20),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -246,15 +251,13 @@ class _PhasesScreenState extends State<PhasesScreen>
       return;
     }
     if (!mounted) return;
-    navigator.push(
-      MaterialPageRoute(
-        builder: (_) => BiomeIntroScreen(phase: phase),
-      ),
-    ).then((_) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        service.refreshUnlockStatus();
-      });
-    });
+    navigator
+        .push(MaterialPageRoute(builder: (_) => BiomeIntroScreen(phase: phase)))
+        .then((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            service.refreshUnlockStatus();
+          });
+        });
   }
 }
 

@@ -54,7 +54,9 @@ class GameService extends ChangeNotifier {
   Future<void> refreshUnlockStatus() async {
     _phaseUnlockStatus = {};
     for (final phase in _phases) {
-      _phaseUnlockStatus[phase.id!] = await _scoreRepository.isPhaseUnlocked(phase.id!);
+      _phaseUnlockStatus[phase.id!] = await _scoreRepository.isPhaseUnlocked(
+        phase.id!,
+      );
     }
     notifyListeners();
   }
@@ -87,7 +89,9 @@ class GameService extends ChangeNotifier {
     try {
       _currentPhase = phase;
       _organisms = await _organismRepository.getByPhaseId(phase.id!);
-      final keys = await _connectionRepository.getConnectionKeysByPhaseId(phase.id!);
+      final keys = await _connectionRepository.getConnectionKeysByPhaseId(
+        phase.id!,
+      );
       _correctConnections = keys;
       _playerConnections = {};
       _wrongConnections = {};
@@ -164,11 +168,15 @@ class GameService extends ChangeNotifier {
         phaseId: _currentPhase!.id!,
         playerName: _playerName,
         score: _score,
-        stars: _scoringService.calculateStars(correctCount, _correctConnections.length),
+        stars: _scoringService.calculateStars(
+          correctCount,
+          _correctConnections.length,
+        ),
         errors: _errors,
         completedAt: DateTime.now().toIso8601String(),
       );
       await _scoreRepository.insert(score);
+      await refreshUnlockStatus();
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Erro ao salvar pontuação.';

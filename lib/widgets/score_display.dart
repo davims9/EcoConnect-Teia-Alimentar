@@ -5,11 +5,7 @@ class ScoreDisplay extends StatelessWidget {
   final int score;
   final int errors;
 
-  const ScoreDisplay({
-    super.key,
-    required this.score,
-    required this.errors,
-  });
+  const ScoreDisplay({super.key, required this.score, required this.errors});
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +27,7 @@ class ScoreDisplay extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           '$errors erros',
-          style: const TextStyle(
-            fontSize: 16,
-            color: AppColors.textSecondary,
-          ),
+          style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
       ],
     );

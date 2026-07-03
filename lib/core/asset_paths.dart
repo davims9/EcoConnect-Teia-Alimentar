@@ -2,7 +2,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/organism.dart';
 
 class OrganismAssetPath {
-  static const _biomeMap = {1: 'campo', 2: 'floresta', 3: 'oceano', 4: 'pantanal'};
+  static const _biomeMap = {
+    1: 'campo',
+    2: 'floresta',
+    3: 'oceano',
+    4: 'pantanal',
+  };
 
   static const _fileMap = {
     1: 'Capim.png',

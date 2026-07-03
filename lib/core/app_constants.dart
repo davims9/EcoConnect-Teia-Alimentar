@@ -12,10 +12,5 @@ class AppConstants {
   static const double organismSize = 90.0;
   static const double lineStrokeWidth = 3.0;
 
-  static const Map<int, int> phaseTimeLimits = {
-    1: 120,
-    2: 100,
-    3: 80,
-    4: 60,
-  };
+  static const Map<int, int> phaseTimeLimits = {1: 120, 2: 100, 3: 80, 4: 60};
 }

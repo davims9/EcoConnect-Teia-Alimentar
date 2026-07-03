@@ -16,10 +16,7 @@ class ConnectionEffect extends Component {
 
   static const double _duration = 1.0;
 
-  ConnectionEffect({
-    required this.center,
-    required this.isCorrect,
-  });
+  ConnectionEffect({required this.center, required this.isCorrect});
 
   @override
   void onLoad() {
@@ -54,13 +51,15 @@ class ConnectionEffect extends Component {
       final radius = isCorrect
           ? (1.5 + rng.nextDouble() * 4.0)
           : (1.5 + rng.nextDouble() * 3.0);
-      _particles.add(_Particle(
-        angle: angle,
-        speed: speed,
-        radius: radius,
-        color: color,
-        delay: i * 0.008,
-      ));
+      _particles.add(
+        _Particle(
+          angle: angle,
+          speed: speed,
+          radius: radius,
+          color: color,
+          delay: i * 0.008,
+        ),
+      );
     }
   }
 

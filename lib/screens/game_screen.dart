@@ -8,6 +8,7 @@ import '../game/food_web_game.dart';
 import '../services/game_service.dart';
 import '../services/audio_service.dart';
 import '../widgets/stars_display.dart';
+import '../widgets/hover_button.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -183,7 +184,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildBackButton() {
-    return GestureDetector(
+    return HoverButton(
       onTap: () => _showExitConfirmation(),
       child: Container(
         margin: const EdgeInsets.only(left: 8),
@@ -292,7 +293,7 @@ class _GameScreenState extends State<GameScreen> {
             ),
           ),
           if (canSubmit)
-            GestureDetector(
+            HoverButton(
               onTap: () => _onSubmit(service),
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -623,7 +624,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  GestureDetector(
+                  HoverButton(
                     onTap: () async {
                       await service.saveScore();
                       if (!ctx.mounted) return;
@@ -768,3 +769,4 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 }
+
