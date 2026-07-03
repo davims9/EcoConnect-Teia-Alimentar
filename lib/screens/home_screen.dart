@@ -6,6 +6,7 @@ import 'ranking_screen.dart';
 import 'about_screen.dart';
 import '../core/app_constants.dart';
 import '../services/game_service.dart';
+import '../widgets/audio_toggle_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -104,13 +105,19 @@ class _HomeScreenState extends State<HomeScreen>
               child: SafeArea(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
-                  child: SizedBox(
-                    height: h,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: h),
                     child: _buildContent(h, w),
                   ),
                 ),
               ),
             ),
+          ),
+          // Audio toggle — top-right corner
+          Positioned(
+            top: 24,
+            right: 24,
+            child: const AudioToggleButton(),
           ),
         ],
       ),
@@ -374,15 +381,18 @@ class _HomeScreenState extends State<HomeScreen>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 18, color: const Color(0xFF81C784)),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2,
-                color: const Color(0xFFA5D6A7),
+            Icon(icon, size: 16, color: const Color(0xFF81C784)),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.5,
+                  color: const Color(0xFFA5D6A7),
+                ),
               ),
             ),
           ],
