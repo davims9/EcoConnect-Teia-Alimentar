@@ -9,6 +9,7 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/painting.dart';
 import '../core/app_colors.dart';
 import '../core/asset_paths.dart';
+import '../services/audio_service.dart';
 import '../models/organism.dart';
 import '../services/game_service.dart';
 import 'components/organism_component.dart';
@@ -276,20 +277,20 @@ class FoodWebGame extends FlameGame {
         final particleCenter = Offset(size.x / 2, size.y * 0.3);
 
         if (gameService.isConnectionCorrect(sourceId, targetId)) {
-          // CORRECT
+          AudioService.instance.playCorrect();
           line.flashThenColor(AppColors.connectionLine);
           _animatePredatorLunge(source, target);
           _scheduleParticles(particleCenter, true);
           onConnectionResult?.call(true, _correctMessage(predatorName, preyName));
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
-          // WRONG DIRECTION
+          AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);
           onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, true));
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         } else {
-          // WRONG COMBINATION
+          AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);

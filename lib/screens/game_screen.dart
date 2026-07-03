@@ -130,7 +130,9 @@ class _GameScreenState extends State<GameScreen> {
                   _showCompletionModal(context, service);
                 });
               }
-              return Column(
+              return Material(
+                type: MaterialType.transparency,
+                child: Column(
                 children: [
                   Expanded(
                     child: Stack(
@@ -153,6 +155,7 @@ class _GameScreenState extends State<GameScreen> {
                     ),
                   ),
                 ],
+              ),
               );
             },
           ),
@@ -464,6 +467,7 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   void _showCompletionModal(BuildContext context, GameService service) {
+    AudioService.instance.playComplete();
     final totalCorrect = service.correctConnections.length;
     final correctCount = totalCorrect - service.errors;
     final stars = totalCorrect == 0
@@ -483,16 +487,18 @@ class _GameScreenState extends State<GameScreen> {
       pageBuilder: (ctx, anim1, anim2) {
         return Align(
           alignment: Alignment.bottomCenter,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 0.3),
-              end: Offset.zero,
-            ).animate(CurvedAnimation(
-              parent: anim1,
-              curve: Curves.easeOut,
-            )),
-            child: Container(
-              margin: const EdgeInsets.all(20),
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.3),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: anim1,
+                curve: Curves.easeOut,
+              )),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Container(
+                margin: const EdgeInsets.all(20),
               padding:
                   const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               decoration: BoxDecoration(
@@ -670,8 +676,9 @@ class _GameScreenState extends State<GameScreen> {
               ),
             ),
           ),
+          ),
         );
-      },
+        },
     );
   }
 
