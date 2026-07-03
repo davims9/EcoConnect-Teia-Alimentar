@@ -18,22 +18,22 @@ class Score {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'phase_id': phaseId,
-        'player_name': playerName,
-        'score': score,
-        'stars': stars,
-        'errors': errors,
-        'completed_at': completedAt,
-      };
+    'id': id,
+    'phase_id': phaseId,
+    'player_name': playerName,
+    'score': score,
+    'stars': stars,
+    'errors': errors,
+    'completed_at': completedAt,
+  };
 
   factory Score.fromMap(Map<String, dynamic> map) => Score(
-        id: map['id'] as int?,
-        phaseId: map['phase_id'] as int,
-        playerName: map['player_name'] as String,
-        score: map['score'] as int,
-        stars: map['stars'] as int,
-        errors: map['errors'] as int,
-        completedAt: map['completed_at'] as String,
-      );
+    id: map['id'] as int?,
+    phaseId: map['phase_id'] as int,
+    playerName: map['player_name'] as String,
+    score: map['score'] as int,
+    stars: map['stars'] as int,
+    errors: map['errors'] as int,
+    completedAt: map['completed_at'] as String,
+  );
 }

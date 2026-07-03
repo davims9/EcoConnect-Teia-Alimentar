@@ -65,36 +65,42 @@ class _RankingScreenState extends State<RankingScreen>
                 Expanded(
                   child: _isLoading
                       ? const Center(
-                          child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF4CAF50),
+                          ),
                         )
                       : _phases.isEmpty
-                          ? Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.leaderboard_outlined,
-                                        size: 56,
-                                        color: const Color(0xFF81C784).withValues(alpha: 0.5)),
-                                    const SizedBox(height: 16),
-                                    const Text(
-                                      'Nenhuma pontuação registrada.\nComplete uma fase para aparecer aqui.',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Color(0xFF81C784),
-                                        fontSize: 14,
-                                        height: 1.5,
-                                      ),
-                                    ),
-                                  ],
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.leaderboard_outlined,
+                                  size: 56,
+                                  color: const Color(
+                                    0xFF81C784,
+                                  ).withValues(alpha: 0.5),
                                 ),
-                              ),
-                            )
-                          : _RankingList(
-                              phaseId: _selectedPhaseId,
-                              scoreRepository: _scoreRepository,
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Nenhuma pontuação registrada.\nComplete uma fase para aparecer aqui.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFF81C784),
+                                    fontSize: 14,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
                             ),
+                          ),
+                        )
+                      : _RankingList(
+                          phaseId: _selectedPhaseId,
+                          scoreRepository: _scoreRepository,
+                        ),
                 ),
               ],
             ),
@@ -201,10 +207,7 @@ class _RankingScreenState extends State<RankingScreen>
               fontWeight: FontWeight.w600,
             ),
             items: _phases
-                .map((p) => DropdownMenuItem(
-                      value: p.id,
-                      child: Text(p.name),
-                    ))
+                .map((p) => DropdownMenuItem(value: p.id, child: Text(p.name)))
                 .toList(),
             onChanged: (value) {
               if (value != null) {
@@ -222,10 +225,7 @@ class _RankingList extends StatelessWidget {
   final int phaseId;
   final ScoreRepository scoreRepository;
 
-  const _RankingList({
-    required this.phaseId,
-    required this.scoreRepository,
-  });
+  const _RankingList({required this.phaseId, required this.scoreRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -265,8 +265,12 @@ class _RankingList extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF1A3A24).withValues(alpha: isTop3 ? 0.95 : 0.8),
-                      const Color(0xFF0D2B1A).withValues(alpha: isTop3 ? 0.85 : 0.7),
+                      const Color(
+                        0xFF1A3A24,
+                      ).withValues(alpha: isTop3 ? 0.95 : 0.8),
+                      const Color(
+                        0xFF0D2B1A,
+                      ).withValues(alpha: isTop3 ? 0.85 : 0.7),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -281,7 +285,9 @@ class _RankingList extends StatelessWidget {
                   boxShadow: isTop3
                       ? [
                           BoxShadow(
-                            color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF4CAF50,
+                            ).withValues(alpha: 0.1),
                             blurRadius: 8,
                           ),
                         ]
@@ -296,7 +302,9 @@ class _RankingList extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            score.playerName.isEmpty ? 'Anônimo' : score.playerName,
+                            score.playerName.isEmpty
+                                ? 'Anônimo'
+                                : score.playerName,
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               color: Color(0xFFE8F5E9),
@@ -307,7 +315,9 @@ class _RankingList extends StatelessWidget {
                           Text(
                             '${score.score} pts',
                             style: TextStyle(
-                              color: const Color(0xFF81C784).withValues(alpha: 0.7),
+                              color: const Color(
+                                0xFF81C784,
+                              ).withValues(alpha: 0.7),
                               fontSize: 13,
                             ),
                           ),
@@ -336,10 +346,14 @@ class _RankingList extends StatelessWidget {
       width: 32,
       height: 32,
       decoration: BoxDecoration(
-        color: isTop3 ? colors[index].withValues(alpha: 0.2) : const Color(0xFF0D2B1A),
+        color: isTop3
+            ? colors[index].withValues(alpha: 0.2)
+            : const Color(0xFF0D2B1A),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: isTop3 ? colors[index].withValues(alpha: 0.5) : const Color(0xFF2E7D32).withValues(alpha: 0.2),
+          color: isTop3
+              ? colors[index].withValues(alpha: 0.5)
+              : const Color(0xFF2E7D32).withValues(alpha: 0.2),
           width: 1,
         ),
       ),

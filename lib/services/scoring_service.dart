@@ -5,7 +5,11 @@ class ScoringService {
     return AppConstants.phaseTimeLimits[phaseId] ?? 120;
   }
 
-  int calculateSubmitScore(int correctCount, int totalConnections, int remainingSeconds) {
+  int calculateSubmitScore(
+    int correctCount,
+    int totalConnections,
+    int remainingSeconds,
+  ) {
     final base = correctCount * AppConstants.basePointsPerCorrect;
     final bonus = remainingSeconds * AppConstants.timeBonusMultiplier;
     return base + bonus;

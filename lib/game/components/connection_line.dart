@@ -55,7 +55,11 @@ class ConnectionLine extends Component {
     if (_colorProgress < 1) {
       _colorProgress += dt * (_isFading ? 4 : 3);
       if (_colorProgress > 1) _colorProgress = 1;
-      color = Color.lerp(color, _targetColor, _colorProgress.clamp(0, 1) as double)!;
+      color = Color.lerp(
+        color,
+        _targetColor,
+        _colorProgress.clamp(0, 1) as double,
+      )!;
     }
     if (_isFading && _colorProgress >= 1) {
       removeFromParent();
@@ -90,12 +94,20 @@ class ConnectionLine extends Component {
     final path = Path()
       ..moveTo(arrowPoint.dx, arrowPoint.dy)
       ..lineTo(
-        arrowPoint.dx - unit.dx * arrowSize + perpendicular.dx * arrowSize * 0.4,
-        arrowPoint.dy - unit.dy * arrowSize + perpendicular.dy * arrowSize * 0.4,
+        arrowPoint.dx -
+            unit.dx * arrowSize +
+            perpendicular.dx * arrowSize * 0.4,
+        arrowPoint.dy -
+            unit.dy * arrowSize +
+            perpendicular.dy * arrowSize * 0.4,
       )
       ..lineTo(
-        arrowPoint.dx - unit.dx * arrowSize - perpendicular.dx * arrowSize * 0.4,
-        arrowPoint.dy - unit.dy * arrowSize - perpendicular.dy * arrowSize * 0.4,
+        arrowPoint.dx -
+            unit.dx * arrowSize -
+            perpendicular.dx * arrowSize * 0.4,
+        arrowPoint.dy -
+            unit.dy * arrowSize -
+            perpendicular.dy * arrowSize * 0.4,
       )
       ..close();
 

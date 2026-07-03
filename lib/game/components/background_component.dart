@@ -5,7 +5,7 @@ class BackgroundComponent extends SpriteComponent {
   final String spritePath;
 
   BackgroundComponent({required this.spritePath, Vector2? size})
-      : super(size: size);
+    : super(size: size);
 
   @override
   Future<void> onLoad() async {
@@ -27,8 +27,11 @@ class BackgroundComponent extends SpriteComponent {
     final offsetY = (size.y - scaledH) / 2;
     for (double x = offsetX; x < size.x; x += scaledW) {
       for (double y = offsetY; y < size.y; y += scaledH) {
-        sprite!.render(canvas,
-            position: Vector2(x, y), size: Vector2(scaledW, scaledH));
+        sprite!.render(
+          canvas,
+          position: Vector2(x, y),
+          size: Vector2(scaledW, scaledH),
+        );
       }
     }
     canvas.drawRect(

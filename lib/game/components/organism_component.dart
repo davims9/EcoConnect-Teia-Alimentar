@@ -9,16 +9,18 @@ import '../../core/asset_paths.dart';
 import '../../models/organism.dart';
 import '../food_web_game.dart';
 
-class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, HasGameRef {
+class OrganismComponent extends SpriteAnimationComponent
+    with DragCallbacks, HasGameRef {
   final Organism organism;
+  final double baseSize;
   double _bobPhase = 0;
   double _baseY = 0;
   double _targetGlow = 0;
   double _currentGlow = 0;
   bool _idleAnimationsEnabled = true;
 
-  OrganismComponent({required this.organism}) {
-    size = Vector2(110, 110);
+  OrganismComponent({required this.organism, this.baseSize = 110.0}) {
+    size = Vector2(baseSize, baseSize);
     anchor = Anchor.center;
   }
 
@@ -38,7 +40,7 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
           image,
           srcPosition: Vector2(i * frameWidth, 0),
           srcSize: textureSize,
-        )
+        ),
     ];
 
     final pingPongSprites = [
@@ -56,13 +58,12 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
     _bobPhase = Random().nextDouble() * 2 * pi;
 
     scale = Vector2.zero();
-    add(ScaleEffect.to(
-      Vector2.all(1),
-      EffectController(
-        duration: 0.5,
-        curve: Curves.elasticOut,
+    add(
+      ScaleEffect.to(
+        Vector2.all(1),
+        EffectController(duration: 0.5, curve: Curves.elasticOut),
       ),
-    ));
+    );
   }
 
   void disableIdleAnimations() {
@@ -97,29 +98,38 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
 
     void shakeStep(int remaining, double amp) {
       if (remaining <= 0) {
-        add(MoveToEffect(
-          original,
-          EffectController(duration: 0.05, curve: Curves.easeInOut),
-        )..onComplete = () {
-            enableIdleAnimations();
-            _baseY = position.y;
-          });
+        add(
+          MoveToEffect(
+              original,
+              EffectController(duration: 0.05, curve: Curves.easeInOut),
+            )
+            ..onComplete = () {
+              enableIdleAnimations();
+              _baseY = position.y;
+            },
+        );
         return;
       }
 
       // Move left
-      add(MoveToEffect(
-        Vector2(original.x - amp, original.y),
-        EffectController(duration: 0.04, curve: Curves.easeInOut),
-      )..onComplete = () {
-          // Move right
-          add(MoveToEffect(
-            Vector2(original.x + amp, original.y),
+      add(
+        MoveToEffect(
+            Vector2(original.x - amp, original.y),
             EffectController(duration: 0.04, curve: Curves.easeInOut),
-          )..onComplete = () {
-              shakeStep(remaining - 1, amp * 0.65);
-            });
-        });
+          )
+          ..onComplete = () {
+            // Move right
+            add(
+              MoveToEffect(
+                  Vector2(original.x + amp, original.y),
+                  EffectController(duration: 0.04, curve: Curves.easeInOut),
+                )
+                ..onComplete = () {
+                  shakeStep(remaining - 1, amp * 0.65);
+                },
+            );
+          },
+      );
     }
 
     shakeStep(3, amplitude);
@@ -151,10 +161,12 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
   @override
   void onDragEnd(DragEndEvent event) {
     super.onDragEnd(event);
-    add(ScaleEffect.to(
-      Vector2.all(1),
-      EffectController(duration: 0.3, curve: Curves.elasticOut),
-    ));
+    add(
+      ScaleEffect.to(
+        Vector2.all(1),
+        EffectController(duration: 0.3, curve: Curves.elasticOut),
+      ),
+    );
     final game = findGame() as FoodWebGame?;
     game?.onDragEnd();
   }
@@ -165,7 +177,11 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
       final glowPaint = Paint()
         ..color = Colors.white.withValues(alpha: _currentGlow * 0.25)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
-      canvas.drawCircle(Offset(size.x / 2, size.y / 2), size.x / 2 + 6, glowPaint);
+      canvas.drawCircle(
+        Offset(size.x / 2, size.y / 2),
+        size.x / 2 + 6,
+        glowPaint,
+      );
     }
 
     super.render(canvas);
@@ -191,28 +207,10 @@ class OrganismComponent extends SpriteAnimationComponent with DragCallbacks, Has
     namePainter.layout(maxWidth: size.x + 20);
     namePainter.paint(
       canvas,
-      Offset(
-        (size.x - namePainter.width) / 2,
-        size.y + 5,
-      ),
+      Offset((size.x - namePainter.width) / 2, size.y + 5),
     );
 
-    // Small trophic level indicator bar (rounded rectangle below the name)
-    final indicatorColor = _colorForTrophicLevel(organism.trophicLevel);
-    final barPaint = Paint()
-      ..color = indicatorColor.withValues(alpha: 0.80);
-    const barWidth = 22.0;
-    const barHeight = 3.0;
     final nameBottom = size.y + 5 + namePainter.height;
-    final barRect = RRect.fromRectAndRadius(
-      Rect.fromCenter(
-        center: Offset(size.x / 2, nameBottom + 5),
-        width: barWidth,
-        height: barHeight,
-      ),
-      const Radius.circular(1.5),
-    );
-    canvas.drawRRect(barRect, barPaint);
   }
 
   Color _colorForTrophicLevel(String level) {

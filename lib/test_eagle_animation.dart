@@ -63,7 +63,7 @@ class TestEagleGame extends FlameGame {
 
     const eagle = Organism(
       id: 7,
-      phaseId: 1, 
+      phaseId: 1,
       name: 'Águia',
       emoji: '🦅',
       trophicLevel: 'predador',

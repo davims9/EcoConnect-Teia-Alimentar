@@ -53,6 +53,4 @@ class OrganismWidget extends StatelessWidget {
       ),
     );
   }
-
-
 }

@@ -5,11 +5,7 @@ class StarsDisplay extends StatelessWidget {
   final int stars;
   final double size;
 
-  const StarsDisplay({
-    super.key,
-    required this.stars,
-    this.size = 24,
-  });
+  const StarsDisplay({super.key, required this.stars, this.size = 24});
 
   @override
   Widget build(BuildContext context) {

@@ -14,18 +14,18 @@ class Phase {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'name': name,
-        'description': description,
-        'biome': biome,
-        'sort_order': sortOrder,
-      };
+    'id': id,
+    'name': name,
+    'description': description,
+    'biome': biome,
+    'sort_order': sortOrder,
+  };
 
   factory Phase.fromMap(Map<String, dynamic> map) => Phase(
-        id: map['id'] as int?,
-        name: map['name'] as String,
-        description: map['description'] as String,
-        biome: map['biome'] as String,
-        sortOrder: map['sort_order'] as int,
-      );
+    id: map['id'] as int?,
+    name: map['name'] as String,
+    description: map['description'] as String,
+    biome: map['biome'] as String,
+    sortOrder: map['sort_order'] as int,
+  );
 }

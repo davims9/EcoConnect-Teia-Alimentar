@@ -8,6 +8,7 @@ import 'tutorial_screen.dart';
 import '../core/app_constants.dart';
 import '../services/game_service.dart';
 import '../widgets/audio_toggle_button.dart';
+import '../widgets/hover_button.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -261,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen>
         builder: (context, child) {
           return Transform.scale(
             scale: _pulseAnim.value,
-            child: GestureDetector(
+            child: HoverButton(
               onTap: () => _navigateToPhases(context),
               child: Container(
                 width: double.infinity,
@@ -295,9 +296,11 @@ class _HomeScreenState extends State<HomeScreen>
                     ),
                   ],
                 ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                         Icon(
                           Icons.play_arrow_rounded,
                           size: height * 0.5,
@@ -324,7 +327,8 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-          );
+          ),
+        );
         },
       ),
     );
@@ -369,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen>
     required IconData icon,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return HoverButton(
       onTap: onTap,
       child: Container(
         height: 52,
@@ -413,7 +417,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildPlayerName() {
     return Consumer<GameService>(
-      builder: (context, service, _) => GestureDetector(
+      builder: (context, service, _) => HoverButton(
         onTap: () => _showNameDialog(context, service),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
@@ -598,3 +602,4 @@ class _ParticlePainter extends CustomPainter {
   bool shouldRepaint(_ParticlePainter oldDelegate) =>
       oldDelegate.progress != progress;
 }
+

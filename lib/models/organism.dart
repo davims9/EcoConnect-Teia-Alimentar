@@ -18,22 +18,22 @@ class Organism {
   });
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'phase_id': phaseId,
-        'name': name,
-        'emoji': emoji,
-        'trophic_level': trophicLevel,
-        'position_x': positionX,
-        'position_y': positionY,
-      };
+    'id': id,
+    'phase_id': phaseId,
+    'name': name,
+    'emoji': emoji,
+    'trophic_level': trophicLevel,
+    'position_x': positionX,
+    'position_y': positionY,
+  };
 
   factory Organism.fromMap(Map<String, dynamic> map) => Organism(
-        id: map['id'] as int?,
-        phaseId: map['phase_id'] as int,
-        name: map['name'] as String,
-        emoji: map['emoji'] as String,
-        trophicLevel: map['trophic_level'] as String,
-        positionX: (map['position_x'] as num).toDouble(),
-        positionY: (map['position_y'] as num).toDouble(),
-      );
+    id: map['id'] as int?,
+    phaseId: map['phase_id'] as int,
+    name: map['name'] as String,
+    emoji: map['emoji'] as String,
+    trophicLevel: map['trophic_level'] as String,
+    positionX: (map['position_x'] as num).toDouble(),
+    positionY: (map['position_y'] as num).toDouble(),
+  );
 }

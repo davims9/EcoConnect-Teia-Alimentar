@@ -29,7 +29,7 @@ enum _VerticalZone { top, middle, bottom }
 /// * bottom – solo, chão, água (1/3 inferior da tela)
 const _zoneMap = <int, _VerticalZone>{
   // ══════ Campo ══════
-  7: _VerticalZone.top,    // Águia — ave ✅ topo
+  7: _VerticalZone.top, // Águia — ave ✅ topo
   1: _VerticalZone.bottom, // Capim — planta do solo ✅
   2: _VerticalZone.bottom, // Gafanhoto — solo ✅
   3: _VerticalZone.bottom, // Coelho — solo ✅
@@ -37,29 +37,29 @@ const _zoneMap = <int, _VerticalZone>{
   5: _VerticalZone.bottom, // Cobra — solo ✅
   6: _VerticalZone.bottom, // Raposa — solo ✅
   // ══════ Floresta ══════
-  13: _VerticalZone.top,   // Gavião — ave ✅ topo
+  13: _VerticalZone.top, // Gavião — ave ✅ topo
   8: _VerticalZone.middle, // Arbusto — nível médio ✅
-  10: _VerticalZone.middle,// Aranha — teia/galhos ✅
+  10: _VerticalZone.middle, // Aranha — teia/galhos ✅
   9: _VerticalZone.bottom, // Lagarta — solo/plantas baixas ✅
-  11: _VerticalZone.bottom,// Sapo — solo ✅
-  12: _VerticalZone.bottom,// Cobra — solo ✅
-  14: _VerticalZone.bottom,// Veado — solo ✅
-  15: _VerticalZone.bottom,// Onça-pintada — solo ✅
+  11: _VerticalZone.bottom, // Sapo — solo ✅
+  12: _VerticalZone.bottom, // Cobra — solo ✅
+  14: _VerticalZone.bottom, // Veado — solo ✅
+  15: _VerticalZone.bottom, // Onça-pintada — solo ✅
   // ══════ Oceano ══════
-  16: _VerticalZone.bottom,// Fitoplâncton — profundo ✅
-  17: _VerticalZone.bottom,// Alga — profundo ✅
-  18: _VerticalZone.bottom,// Camarão — fundo ✅
+  16: _VerticalZone.bottom, // Fitoplâncton — profundo ✅
+  17: _VerticalZone.bottom, // Alga — profundo ✅
+  18: _VerticalZone.bottom, // Camarão — fundo ✅
   19: _VerticalZone.middle, // Sardinha — meio ✅
   20: _VerticalZone.middle, // Polvo — meio ✅
   21: _VerticalZone.middle, // Atum — meio ✅
-  22: _VerticalZone.top,   // Tubarão — topo ✅
+  22: _VerticalZone.top, // Tubarão — topo ✅
   // ══════ Pantanal ══════
-  23: _VerticalZone.bottom,// Planta aquática — água/solo ✅
-  24: _VerticalZone.bottom,// Caramujo — solo/água ✅
-  25: _VerticalZone.bottom,// Peixe — água ✅
-  26: _VerticalZone.bottom,// Garça — ave, mas vive no solo/água 🟢
-  27: _VerticalZone.bottom,// Jacaré — água/solo ✅
-  28: _VerticalZone.bottom,// Cobra sucuri — água/solo ✅
+  23: _VerticalZone.bottom, // Planta aquática — água/solo ✅
+  24: _VerticalZone.bottom, // Caramujo — solo/água ✅
+  25: _VerticalZone.bottom, // Peixe — água ✅
+  26: _VerticalZone.bottom, // Garça — ave, mas vive no solo/água 🟢
+  27: _VerticalZone.bottom, // Jacaré — água/solo ✅
+  28: _VerticalZone.bottom, // Cobra sucuri — água/solo ✅
   29: _VerticalZone.middle, // Onça-pintada — galho/nível médio ✅
 };
 
@@ -104,10 +104,23 @@ class FoodWebGame extends FlameGame {
     add(_background!);
 
     final organisms = gameService.organisms;
-    final positions = _generateZonedPositions(organisms);
+
+    // Calcula o tamanho dinâmico do organismo baseado no espaço da tela
+    final double maxOrganismSize = 110.0;
+    final double minOrganismSize =
+        35.0; // Diminuído para caber em telas muito pequenas
+    final double dynamicSize = min(
+      size.x / 6, // Ajustado para permitir mais animais por linha
+      size.y / 6,
+    ).clamp(minOrganismSize, maxOrganismSize);
+
+    final positions = _generateZonedPositions(organisms, dynamicSize);
 
     for (int i = 0; i < organisms.length; i++) {
-      final component = OrganismComponent(organism: organisms[i]);
+      final component = OrganismComponent(
+        organism: organisms[i],
+        baseSize: dynamicSize,
+      );
       component.position = positions[i];
       component.scale = Vector2.zero();
       organismComponents.add(component);
@@ -118,17 +131,23 @@ class FoodWebGame extends FlameGame {
   static _VerticalZone _zoneFor(int? organismId) =>
       _zoneMap[organismId] ?? _VerticalZone.bottom;
 
-  List<Vector2> _generateZonedPositions(List<Organism> organisms) {
+  List<Vector2> _generateZonedPositions(
+    List<Organism> organisms,
+    double organismSize,
+  ) {
     if (organisms.isEmpty || size.x <= 0 || size.y <= 0) return [];
 
     final random = Random();
 
-    const topMargin = 120.0;
-    const bottomMargin = 100.0;
-    const sideMargin = 60.0;
+    final double sideMargin = (size.x * 0.05).clamp(15.0, 60.0);
+    final double topMargin = (size.y * 0.15).clamp(60.0, 120.0);
+    final double bottomMargin = (size.y * 0.1).clamp(50.0, 100.0);
 
     final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
-    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(
+      200.0,
+      double.infinity,
+    );
 
     final zoneRanges = <_VerticalZone, Vector2>{
       _VerticalZone.top: Vector2(0.00, 0.30),
@@ -136,9 +155,8 @@ class FoodWebGame extends FlameGame {
       _VerticalZone.bottom: Vector2(0.66, 1.00),
     };
 
-    const organismSize = 110.0;
     const edgeGap = 15.0;
-    final idealDist = organismSize + edgeGap; // 125.0
+    final idealDist = organismSize + edgeGap;
 
     final grouped = <_VerticalZone, List<int>>{
       for (final z in _VerticalZone.values) z: <int>[],
@@ -191,7 +209,9 @@ class FoodWebGame extends FlameGame {
           rows = idealRows;
           spacingX = (safeWidth - organismSize) / (maxCols - 1);
           final neededVertical = organismSize + idealDist * (rows - 1);
-          spacingY = neededVertical <= zoneHeight ? idealDist : (zoneHeight - organismSize) / (rows - 1);
+          spacingY = neededVertical <= zoneHeight
+              ? idealDist
+              : (zoneHeight - organismSize) / (rows - 1);
         } else if (maxRowsThatFit >= 2) {
           // Zone can fit some rows, but not the ideal amount
           rows = maxRowsThatFit;
@@ -208,29 +228,19 @@ class FoodWebGame extends FlameGame {
         }
       }
 
-      // Final safety: spacing never below organismSize (guarantees no visual overlap)
-      if (spacingX < organismSize && cols > 1) {
-        spacingX = organismSize;
-      }
+      // Final safety: se ainda assim as linhas forem muito altas, comprime uniformemente
       if (spacingY < organismSize && rows > 1) {
-        if ((rows - 1) * organismSize + organismSize <= zoneHeight) {
-          // Keep as-is, organisms at least edge-to-edge
-        } else {
-          // Even minimum vertical spacing doesn't fit → force single row
-          rows = 1;
-          cols = count;
-          spacingX = (safeWidth - organismSize) / (count - 1);
-          spacingY = 0;
-          if (spacingX < organismSize && cols > 1) spacingX = organismSize;
+        if ((rows - 1) * organismSize + organismSize > zoneHeight) {
+          // Tenta ajustar o spacingY para caber de qualquer forma
+          spacingY = (zoneHeight - organismSize) / (rows - 1);
+          if (spacingY < 0) spacingY = 0;
         }
       }
 
       // --- Distribute row items equally (last row may have fewer items) ---
       final itemsPerRow = <int>[];
       for (int r = 0; r < rows; r++) {
-        final items = (r < rows - 1)
-            ? cols
-            : count - r * cols;
+        final items = (r < rows - 1) ? cols : count - r * cols;
         itemsPerRow.add(items);
       }
 
@@ -282,10 +292,7 @@ class FoodWebGame extends FlameGame {
           sideMargin + organismSize / 2,
           sideMargin + safeWidth - organismSize / 2,
         );
-        posY = posY.clamp(
-          yMin + organismSize / 2,
-          yMax - organismSize / 2,
-        );
+        posY = posY.clamp(yMin + organismSize / 2, yMax - organismSize / 2);
 
         result[idx] = Vector2(posX, posY);
       }
@@ -293,8 +300,6 @@ class FoodWebGame extends FlameGame {
 
     return result;
   }
-
-
 
   Offset getOrganismCenter(OrganismComponent comp) {
     return comp.position.toOffset();
@@ -391,20 +396,29 @@ class FoodWebGame extends FlameGame {
           line.flashThenColor(AppColors.connectionLine);
           _animatePredatorLunge(source, target);
           _scheduleParticles(particleCenter, true);
-          onConnectionResult?.call(true, _correctMessage(predatorName, preyName));
+          onConnectionResult?.call(
+            true,
+            _correctMessage(predatorName, preyName),
+          );
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
           AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);
-          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, true));
+          onConnectionResult?.call(
+            false,
+            _wrongMessage(predatorName, preyName, true),
+          );
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         } else {
           AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);
-          onConnectionResult?.call(false, _wrongMessage(predatorName, preyName, false));
+          onConnectionResult?.call(
+            false,
+            _wrongMessage(predatorName, preyName, false),
+          );
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         }
       }
@@ -420,7 +434,11 @@ class FoodWebGame extends FlameGame {
   }
 
   /// Wrong line starts fading at ~2.8 s so it disappears together with the card.
-  void _scheduleWrongLineRemoval(ConnectionLine line, int sourceId, int targetId) {
+  void _scheduleWrongLineRemoval(
+    ConnectionLine line,
+    int sourceId,
+    int targetId,
+  ) {
     Future.delayed(const Duration(milliseconds: 2800), () {
       if (!line.isLoaded) return;
       line.fadeOut();
@@ -429,7 +447,10 @@ class FoodWebGame extends FlameGame {
     });
   }
 
-  void _animatePredatorLunge(OrganismComponent predator, OrganismComponent prey) {
+  void _animatePredatorLunge(
+    OrganismComponent predator,
+    OrganismComponent prey,
+  ) {
     predator.disableIdleAnimations();
     final original = predator.position.clone();
     final targetPos = prey.position.clone();
@@ -439,14 +460,16 @@ class FoodWebGame extends FlameGame {
 
     predator.add(
       MoveToEffect(
-        lungeTarget,
-        EffectController(duration: 0.45, curve: Curves.easeOut),
-      )..onComplete = () {
+          lungeTarget,
+          EffectController(duration: 0.45, curve: Curves.easeOut),
+        )
+        ..onComplete = () {
           predator.add(
             MoveToEffect(
-              original,
-              EffectController(duration: 1.0, curve: Curves.easeInOut),
-            )..onComplete = () {
+                original,
+                EffectController(duration: 1.0, curve: Curves.easeInOut),
+              )
+              ..onComplete = () {
                 predator.enableIdleAnimations();
               },
           );
@@ -480,5 +503,3 @@ class FoodWebGame extends FlameGame {
     }
   }
 }
-
-

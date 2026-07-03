@@ -60,13 +60,33 @@ class _AboutScreenState extends State<AboutScreen>
                         const SizedBox(height: 32),
                         _buildSectionTitle('BIOMAS'),
                         const SizedBox(height: 12),
-                        _buildBiomeCard(Icons.grass, 'Campo', 'Ecossistema de gramíneas', const Color(0xFFA5D6A7)),
+                        _buildBiomeCard(
+                          Icons.grass,
+                          'Campo',
+                          'Ecossistema de gramíneas',
+                          const Color(0xFFA5D6A7),
+                        ),
                         const SizedBox(height: 8),
-                        _buildBiomeCard(Icons.forest, 'Floresta', 'Mata Atlântica e Floresta Tropical', const Color(0xFF80CBC4)),
+                        _buildBiomeCard(
+                          Icons.forest,
+                          'Floresta',
+                          'Mata Atlântica e Floresta Tropical',
+                          const Color(0xFF80CBC4),
+                        ),
                         const SizedBox(height: 8),
-                        _buildBiomeCard(Icons.water, 'Oceano', 'Ecossistema marinho', const Color(0xFF90CAF9)),
+                        _buildBiomeCard(
+                          Icons.water,
+                          'Oceano',
+                          'Ecossistema marinho',
+                          const Color(0xFF90CAF9),
+                        ),
                         const SizedBox(height: 8),
-                        _buildBiomeCard(Icons.landscape, 'Pantanal', 'Maior planície alagável do mundo', const Color(0xFFFFCC80)),
+                        _buildBiomeCard(
+                          Icons.landscape,
+                          'Pantanal',
+                          'Maior planície alagável do mundo',
+                          const Color(0xFFFFCC80),
+                        ),
                         const SizedBox(height: 32),
                         _buildSectionTitle('TECNOLOGIAS'),
                         const SizedBox(height: 8),
@@ -80,9 +100,7 @@ class _AboutScreenState extends State<AboutScreen>
                           'de grafos para persistência local em jogos educacionais.',
                         ),
                         const SizedBox(height: 40),
-                        Center(
-                          child: _buildResetButton(),
-                        ),
+                        Center(child: _buildResetButton()),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -242,7 +260,12 @@ class _AboutScreenState extends State<AboutScreen>
     );
   }
 
-  Widget _buildBiomeCard(IconData icon, String name, String description, Color iconColor) {
+  Widget _buildBiomeCard(
+    IconData icon,
+    String name,
+    String description,
+    Color iconColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -255,10 +278,7 @@ class _AboutScreenState extends State<AboutScreen>
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: iconColor.withValues(alpha: 0.3),
-          width: 1.2,
-        ),
+        border: Border.all(color: iconColor.withValues(alpha: 0.3), width: 1.2),
       ),
       child: Row(
         children: [
@@ -374,7 +394,11 @@ class _AboutScreenState extends State<AboutScreen>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.delete_outline, size: 16, color: const Color(0xFFEF5350).withValues(alpha: 0.8)),
+            Icon(
+              Icons.delete_outline,
+              size: 16,
+              color: const Color(0xFFEF5350).withValues(alpha: 0.8),
+            ),
             const SizedBox(width: 8),
             Text(
               'REDEFINIR PROGRESSO',
@@ -405,7 +429,10 @@ class _AboutScreenState extends State<AboutScreen>
         ),
         title: const Text(
           'Redefinir progresso?',
-          style: TextStyle(color: Color(0xFFE8F5E9), fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: Color(0xFFE8F5E9),
+            fontWeight: FontWeight.w700,
+          ),
         ),
         content: const Text(
           'Todo o progresso do jogo será perdido.',

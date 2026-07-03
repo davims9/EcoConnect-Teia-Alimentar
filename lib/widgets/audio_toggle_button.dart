@@ -54,12 +54,14 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
   Widget build(BuildContext context) {
     final isMuted = AudioService.instance.isMuted;
 
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isPressed = true),
-      onTapUp: (_) => setState(() => _isPressed = false),
-      onTapCancel: () => setState(() => _isPressed = false),
-      onTap: _handleToggle,
-      child: AnimatedScale(
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) => setState(() => _isPressed = false),
+        onTapCancel: () => setState(() => _isPressed = false),
+        onTap: _handleToggle,
+        child: AnimatedScale(
         scale: _isPressed ? 0.88 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: ScaleTransition(
@@ -96,6 +98,7 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
               ),
             ),
           ),
+        ),
         ),
       ),
     );

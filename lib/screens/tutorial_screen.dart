@@ -212,10 +212,8 @@ class _TutorialScreenState extends State<TutorialScreen>
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      transitionBuilder: (child, anim) => FadeTransition(
-        opacity: anim,
-        child: child,
-      ),
+      transitionBuilder: (child, anim) =>
+          FadeTransition(opacity: anim, child: child),
       child: Container(
         key: ValueKey(_messageKey),
         constraints: const BoxConstraints(maxWidth: 300),
@@ -227,10 +225,11 @@ class _TutorialScreenState extends State<TutorialScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: (_isCorrect
-                      ? const Color(0xFF4CAF50)
-                      : const Color(0xFFEF5350))
-                  .withValues(alpha: 0.2),
+              color:
+                  (_isCorrect
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFEF5350))
+                      .withValues(alpha: 0.2),
               blurRadius: 16,
               offset: const Offset(0, 3),
             ),

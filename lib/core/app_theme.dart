@@ -118,9 +118,7 @@ class AppTheme {
         color: AppColors.surface,
         elevation: 0,
         shadowColor: AppColors.primary.withValues(alpha: 0.08),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -132,9 +130,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            color: AppColors.onPrimary,
-          ),
+          textStyle: textTheme.labelLarge?.copyWith(color: AppColors.onPrimary),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -145,9 +141,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(999),
           ),
-          textStyle: textTheme.labelLarge?.copyWith(
-            color: AppColors.secondary,
-          ),
+          textStyle: textTheme.labelLarge?.copyWith(color: AppColors.secondary),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
