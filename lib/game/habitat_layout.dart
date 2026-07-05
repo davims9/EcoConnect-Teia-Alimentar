@@ -1,173 +1,93 @@
-import 'dart:ui';
+import 'dart:ui' show Offset;
 
-/// Visual layers for organism positioning by habitat.
+/// Per-biome manual positions for Campo, Floresta and Pantanal.
 ///
-/// Each organism is classified into one of these layers per biome.
-/// The layer determines the vertical region of the screen where
-/// the organism will appear.
-enum VisualLayer {
-  /// Birds and flying organisms — top region of the screen.
-  sky,
-
-  /// Canopy / tree-dwelling organisms in Forest biome.
-  canopy,
-
-  /// Terrestrial animals and plants — bottom region.
-  ground,
-
-  /// Aquatic organisms in Pantanal biome.
-  water,
-
-  /// Elevated position (not sky) for organisms like onça in Pantanal.
-  elevated,
-}
-
-/// Per-biome explicit slot positions for natural organism layout.
+/// Every organism has its own explicit (X, Y) in normalized space
+/// (0.0–1.0 within the safe screen area).  Positions were chosen
+/// by hand to:
 ///
-/// Normalized coordinates (0.0–1.0) mapped to the safe screen area
-/// (between top/bottom/side margins). Values represent the center
-/// of the organism's sprite.
+///   • respect habitat (sky, canopy, ground, water)
+///   • keep good visual separation between sprites/labels
+///   • avoid excessive connection crossing
+///   • avoid uniform "shelf" alignment
 ///
-/// Layout zones per biome (fraction of safe area):
-///
-/// [[campo]]
-///   sky:     Y 0.00–0.22  (Águia)
-///   ground:  Y 0.60–1.00  (all terrestrial)
-///
-/// [[floresta]]
-///   canopy:  Y 0.00–0.30  (Gavião, Aranha, Lagarta)
-///   ground:  Y 0.60–1.00  (Arbusto, Sapo, Cobra, Veado, Onça)
-///
-/// [[pantanal]]
-///   water:   Y 0.30–0.60  (Peixe, Jacaré, Garça, Cobra sucuri)
-///   ground:  Y 0.65–1.00  (Planta aquática, Caramujo)
-///   elevated: Y 0.25–0.35 (Onça-pintada on riverbank)
+/// The positions are stable (no random jitter) so the same phase always
+/// looks the same — important for a consistent learning experience.
 class HabitatLayout {
-  /// Returns explicit normalized (x, y) positions keyed by organism ID
-  /// for the given biome. Returns null if no explicit layout exists
-  /// (the zone-based fallback is used instead, e.g. for Oceano).
-  static Map<int, Offset>? getPositions(String biome) {
-    return _layouts[biome];
+  /// Returns the manual normalized position for [organismId] in [biome],
+  /// or `null` if the biome uses automatic layout (Oceano).
+  static Offset? getPosition(String biome, int organismId) {
+    return _positions[biome]?[organismId];
   }
 
-  /// Returns the visual layer for [organismId] in [biome].
-  static VisualLayer getLayer(String biome, int organismId) {
-    return _layerMaps[biome]?[organismId] ?? VisualLayer.ground;
-  }
+  /// Returns `true` if [biome] has manual positions.
+  static bool hasLayout(String biome) => _positions.containsKey(biome);
 
-  static final Map<String, Map<int, Offset>> _layouts = {
-    'campo': _campoPositions,
-    'floresta': _florestaPositions,
-    'pantanal': _pantanalPositions,
+  static final Map<String, Map<int, Offset>> _positions = {
+    'campo': _campo,
+    'floresta': _floresta,
+    'pantanal': _pantanal,
   };
 
-  static final Map<String, Map<int, VisualLayer>> _layerMaps = {
-    'campo': _campoLayers,
-    'floresta': _florestaLayers,
-    'pantanal': _pantanalLayers,
+  // ═══════════════════════ CAMPO ═══════════════════════
+  //
+  //   Águia (top-center) preys on Cobra and Coelho.
+  //   Raposa (upper-left) preys on Coelho.
+  //   Cobra (upper-right) preys on Coelho and Sapo.
+  //   Sapo (center-left) preys on Gafanhoto.
+  //   Coelho (center-right) preys on Capim.
+  //   Gafanhoto (lower-left) preys on Capim.
+  //   Capim (lower-center, produtor).
+  //
+  static const _campo = <int, Offset>{
+    7: Offset(0.50, 0.08),   // Águia — céu centro
+    6: Offset(0.15, 0.32),   // Raposa — superior esquerda
+    5: Offset(0.85, 0.60),   // Cobra — superior direita
+    4: Offset(0.40, 0.50),   // Sapo — centro-esquerda
+    3: Offset(0.68, 0.54),   // Coelho — centro-direita
+    2: Offset(0.24, 0.74),   // Gafanhoto — inferior esquerdo
+    1: Offset(0.52, 0.84),   // Capim — centro inferior
   };
 
-  // ═══════════════════════ Campo ═══════════════════════
+  // ═══════════════════════ FLORESTA ═══════════════════════
   //
-  //   Sky:   Águia (0.50, 0.10)
-  //   Ground: Capim at far-left, Gafanhoto near capim,
-  //           Sapo center, Coelho right, Cobra far-right,
-  //           Raposa lower-left near where prey roam.
+  //   Gavião (canopy-left) and Onça (canopy-right) are top predators.
+  //   Cobra (center) is preyed by both.
+  //   Veado (right) is preyed by Onça.
+  //   Sapo (left) preys on Aranha and Lagarta.
+  //   Aranha and Lagarta prey on Arbusto.
+  //   Arbusto (bottom-center, produtor).
   //
-  //  Connections: Águia ← Cobra ← Sapo ← Gafanhoto ← Capim
-  //               Águia ← Cobra ← Coelho ← Capim
-  //               Raposa ← Coelho ← Capim
-  //               Cobra ← Sapo ← Gafanhoto ← Capim
-  //
-
-  static const _campoLayers = <int, VisualLayer>{
-    7: VisualLayer.sky,    // Águia
-    1: VisualLayer.ground, // Capim
-    2: VisualLayer.ground, // Gafanhoto
-    3: VisualLayer.ground, // Coelho
-    4: VisualLayer.ground, // Sapo
-    5: VisualLayer.ground, // Cobra
-    6: VisualLayer.ground, // Raposa
+  static const _floresta = <int, Offset>{
+    13: Offset(0.20, 0.08),  // Gavião — copa esquerda
+    15: Offset(0.60, 0.65),  // Onça-pintada — copa direita
+    12: Offset(0.85, 0.78),  // Cobra — centro
+    14: Offset(0.40, 0.70),  // Veado — solo direito
+    11: Offset(0.15, 0.80),  // Sapo — solo esquerdo
+    10: Offset(0.80, 0.10),  // Aranha — inferior esquerda
+    9: Offset(0.70, 0.80),   // Lagarta — inferior direita
+    8: Offset(0.48, 0.90),   // Arbusto — centro inferior
   };
 
-  static const _campoPositions = <int, Offset>{
-    7: Offset(0.50, 0.10),  // Águia — sky centered
-    1: Offset(0.12, 0.88),  // Capim — far left, very bottom
-    2: Offset(0.28, 0.78),  // Gafanhoto — near capim, slightly above
-    4: Offset(0.48, 0.82),  // Sapo — center ground
-    3: Offset(0.65, 0.74),  // Coelho — right of center
-    5: Offset(0.85, 0.80),  // Cobra — far right ground
-    6: Offset(0.30, 0.92),  // Raposa — left lower ground
-  };
-
-  // ═══════════════════════ Floresta ═══════════════════════
+  // ═══════════════════════ PANTANAL ═══════════════════════
   //
-  //   Canopy: Gavião (left), Aranha (center), Lagarta (right on leaves)
-  //   Ground: Arbusto far-left, Sapo left-center, Cobra center,
-  //           Veado right, Onça center-low
+  //   Onça (top-center) preys on Garça and Jacaré.
+  //   Garça (upper-left) preys on Peixe.
+  //   Jacaré (mid-right) preys on Peixe.
+  //   Cobra sucuri (mid-left) preys on Peixe and Jacaré.
+  //   Peixe (center) preys on Caramujo and Planta aquática.
+  //   Caramujo (lower-left) preys on Planta aquática.
+  //   Planta aquática (lower-right, produtor).
   //
-  //  Connections: Gavião ← Cobra ← Sapo ← Lagarta ← Arbusto
-  //               Gavião ← Cobra ← Sapo ← Aranha ← Lagarta ← Arbusto
-  //               Onça ← Cobra ← Sapo ← Lagarta ← Arbusto
-  //               Onça ← Veado ← Arbusto
-  //               Cobra ← Sapo ← Aranha ← Lagarta ← Arbusto
-  //               Sapo ← Aranha ← Lagarta ← Arbusto
+  //   Garça is a wading bird — stays in the upper area, not sky.
   //
-
-  static const _florestaLayers = <int, VisualLayer>{
-    13: VisualLayer.canopy, // Gavião
-    10: VisualLayer.canopy, // Aranha
-    9: VisualLayer.canopy,  // Lagarta
-    8: VisualLayer.ground,  // Arbusto
-    11: VisualLayer.ground, // Sapo
-    12: VisualLayer.ground, // Cobra
-    14: VisualLayer.ground, // Veado
-    15: VisualLayer.ground, // Onça-pintada
-  };
-
-  static const _florestaPositions = <int, Offset>{
-    13: Offset(0.20, 0.14),  // Gavião — canopy left
-    10: Offset(0.52, 0.22),  // Aranha — canopy center (web)
-    9: Offset(0.80, 0.18),   // Lagarta — canopy right (on leaves)
-    8: Offset(0.12, 0.72),   // Arbusto — ground far left (plant)
-    11: Offset(0.35, 0.80),  // Sapo — ground left-center
-    12: Offset(0.58, 0.74),  // Cobra — ground center
-    14: Offset(0.78, 0.82),  // Veado — ground right
-    15: Offset(0.50, 0.92),  // Onça-pintada — ground center-low
-  };
-
-  // ═══════════════════════ Pantanal ═══════════════════════
-  //
-  //   Elevated: Onça-pintada (riverbank, not sky)
-  //   Water:    Cobra sucuri, Garça (wading), Jacaré, Peixe
-  //   Ground:   Caramujo, Planta aquática
-  //
-  //  Connections: Onça ← Garça ← Peixe ← Caramujo ← Planta aquática
-  //               Onça ← Jacaré ← Peixe ← Caramujo ← Planta aquática
-  //               Cobra sucuri ← Jacaré ← Peixe ← Caramujo ← Planta aquática
-  //               Garça ← Peixe ← Planta aquática
-  //               Onça ← Jacaré ← Peixe ← Planta aquática
-  //               Cobra sucuri ← Peixe ← Planta aquática
-  //               Jacaré ← Peixe ← Planta aquática
-  //
-
-  static const _pantanalLayers = <int, VisualLayer>{
-    29: VisualLayer.elevated, // Onça-pintada
-    28: VisualLayer.water,    // Cobra sucuri
-    26: VisualLayer.water,    // Garça (wading bird — on water, not sky)
-    27: VisualLayer.water,    // Jacaré
-    25: VisualLayer.water,    // Peixe
-    24: VisualLayer.ground,   // Caramujo
-    23: VisualLayer.ground,   // Planta aquática
-  };
-
-  static const _pantanalPositions = <int, Offset>{
-    29: Offset(0.72, 0.30),  // Onça-pintada — elevated (riverbank)
-    28: Offset(0.35, 0.42),  // Cobra sucuri — water mid-left
-    26: Offset(0.15, 0.55),  // Garça — water far left (wading)
-    27: Offset(0.80, 0.48),  // Jacaré — water right
-    25: Offset(0.55, 0.62),  // Peixe — water center
-    24: Offset(0.30, 0.75),  // Caramujo — ground left
-    23: Offset(0.65, 0.82),  // Planta aquática — ground right
+  static const _pantanal = <int, Offset>{
+    29: Offset(0.78, 0.38),  // Onça-pintada — topo centro
+    26: Offset(0.85, 0.6),  // Garça — meio direita
+    28: Offset(0.30, 0.38),  // Cobra sucuri — meio esquerda
+    27: Offset(0.85, 0.70),  // Jacaré — meio direita
+    25: Offset(0.55, 0.56),  // Peixe — centro
+    24: Offset(0.25, 0.74),  // Caramujo — inferior esquerdo
+    23: Offset(0.65, 0.84),  // Planta aquática — inferior direita
   };
 }

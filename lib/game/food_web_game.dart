@@ -140,29 +140,25 @@ class FoodWebGame extends FlameGame {
   ) {
     if (organisms.isEmpty || size.x <= 0 || size.y <= 0) return [];
 
-    // ── Use explicit habitat layout for Campo, Floresta, Pantanal ──
-    final layout = HabitatLayout.getPositions(biome);
-    if (layout != null) {
-      return _applyHabitatLayout(organisms, organismSize, layout);
+    // ── Manual positions for Campo, Floresta, Pantanal ──
+    if (HabitatLayout.hasLayout(biome)) {
+      return _applyManualPositions(organisms, organismSize, biome);
     }
 
-    // ── Fallback: zone-based grid (used for Oceano) ──
+    // ── Fallback: zone-based grid (unchanged, used for Oceano) ──
     return _generateGridPositions(organisms, organismSize);
   }
 
-  /// Places organisms using explicit per-ID normalized positions from
-  /// [HabitatLayout]. Each position is mapped from normalized (0–1) space
-  /// into the safe area and clamped to prevent clipping.
-  List<Vector2> _applyHabitatLayout(
+  /// Places each organism at its hand-authored position from
+  /// [HabitatLayout] with no jitter or redistribution.
+  List<Vector2> _applyManualPositions(
     List<Organism> organisms,
     double organismSize,
-    Map<int, Offset> layout,
+    String biome,
   ) {
-    final result = List<Vector2>.filled(organisms.length, Vector2.zero());
-
     final double sideMargin = (size.x * 0.05).clamp(15.0, 60.0);
     final double topMargin = (size.y * 0.15).clamp(60.0, 120.0);
-    final double bottomMargin = (size.y * 0.1).clamp(50.0, 100.0);
+    final double bottomMargin = (size.y * 0.08).clamp(40.0, 80.0);
 
     final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
     final safeHeight = (size.y - topMargin - bottomMargin).clamp(
@@ -171,24 +167,18 @@ class FoodWebGame extends FlameGame {
     );
 
     final halfSize = organismSize / 2;
+    final result = List<Vector2>.filled(organisms.length, Vector2.zero());
 
     for (int i = 0; i < organisms.length; i++) {
       final org = organisms[i];
-      final slot = layout[org.id];
-      if (slot == null) {
-        result[i] = Vector2(sideMargin + safeWidth / 2, topMargin + safeHeight * 0.5);
-        continue;
-      }
-
-      final px = sideMargin + slot.dx * safeWidth;
-      final py = topMargin + slot.dy * safeHeight;
-
+      final pos = HabitatLayout.getPosition(biome, org.id!) ?? const Offset(0.50, 0.50);
       result[i] = Vector2(
-        px.clamp(sideMargin + halfSize, sideMargin + safeWidth - halfSize),
-        py.clamp(topMargin + halfSize, topMargin + safeHeight - halfSize),
+        (sideMargin + pos.dx * safeWidth)
+            .clamp(sideMargin + halfSize, sideMargin + safeWidth - halfSize),
+        (topMargin + pos.dy * safeHeight)
+            .clamp(topMargin + halfSize, topMargin + safeHeight - halfSize),
       );
     }
-
     return result;
   }
 
