@@ -67,18 +67,18 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
         child: ScaleTransition(
           scale: _toggleAnim,
           child: Container(
-            width: 44,
-            height: 44,
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1A3A24).withValues(alpha: 0.8),
+              color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
               border: Border.all(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.4),
+                color: const Color(0xFF2E7D32).withValues(alpha: 0.65),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.15),
+                  color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -93,8 +93,8 @@ class _AudioToggleButtonState extends State<AudioToggleButton>
               child: Icon(
                 isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
                 key: ValueKey(isMuted),
-                size: 20,
-                color: const Color(0xFF81C784),
+                size: 22,
+                color: const Color(0xFFBBF7D0),
               ),
             ),
           ),
