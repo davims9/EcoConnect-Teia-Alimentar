@@ -70,31 +70,36 @@ class _GameScreenState extends State<GameScreen> {
               }
               return Material(
                 type: MaterialType.transparency,
-                child: Column(
-                children: [
-                  GameTopHud(onBackTap: _showExitConfirmation),
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        flame.GameWidget(game: _game),
-                        if (_connectionMessage != null)
-                          Positioned(
-                            top: MediaQuery.of(context).size.height * 0.25,
-                            left: 24,
-                            right: 24,
-                            child: _buildConnectionMessage(),
-                          ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: _buildHud(service),
-                        ),
-                      ],
+                child: Stack(
+                  children: [
+                    // Game fills the entire available area.
+                    flame.GameWidget(game: _game),
+                    // Top HUD — unconditionally overlaid above the game.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: GameTopHud(
+                        onBackTap: _showExitConfirmation,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    // Connection feedback overlay (mid-screen).
+                    if (_connectionMessage != null)
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.25,
+                        left: 24,
+                        right: 24,
+                        child: _buildConnectionMessage(),
+                      ),
+                    // Bottom HUD — submit / status buttons.
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildHud(service),
+                    ),
+                  ],
+                ),
               );
             },
           ),

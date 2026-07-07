@@ -12,6 +12,9 @@ import 'audio_toggle_button.dart';
 /// Uses [google_fonts] (Nunito) for a rounded, friendly look on the HUD only.
 /// Cards follow the UI/UX identity guide: dark green translucent background,
 /// green borders, rounded corners and soft shadow.
+///
+/// Layout uses [Spacer] and [Flexible] to distribute items across the full
+/// screen width. On narrow screens (< 500 dp) the row becomes scrollable.
 class GameTopHud extends StatelessWidget {
   final VoidCallback onBackTap;
 
@@ -27,10 +30,10 @@ class GameTopHud extends StatelessWidget {
 
         return Container(
           padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 4,
-            left: 8,
-            right: 8,
-            bottom: 10,
+            top: MediaQuery.of(context).padding.top + 6,
+            left: 10,
+            right: 10,
+            bottom: 8,
           ),
           decoration: const BoxDecoration(
             gradient: LinearGradient(
@@ -44,24 +47,53 @@ class GameTopHud extends StatelessWidget {
               stops: [0.0, 0.55, 1.0],
             ),
           ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _BackButton(onTap: onBackTap),
-                const SizedBox(width: 8),
-                if (phase != null) _BiomeCard(phase: phase),
-                const SizedBox(width: 8),
-                _ScoreCard(score: service.score),
-                const SizedBox(width: 8),
-                _ConnectionCard(made: made, total: total),
-                const SizedBox(width: 8),
-                _TimerCard(seconds: service.remainingSeconds),
-                const SizedBox(width: 8),
-                const AudioToggleButton(),
-              ],
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 500;
+
+              if (isCompact) {
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _BackButton(onTap: onBackTap),
+                      const SizedBox(width: 6),
+                      if (phase != null) _BiomeCard(phase: phase),
+                      const SizedBox(width: 6),
+                      _ScoreCard(score: service.score),
+                      const SizedBox(width: 6),
+                      _ConnectionCard(made: made, total: total),
+                      const SizedBox(width: 6),
+                      _TimerCard(seconds: service.remainingSeconds),
+                      const SizedBox(width: 6),
+                      const AudioToggleButton(),
+                    ],
+                  ),
+                );
+              }
+
+              // Wide layout: distribute items across the available width.
+              return Row(
+                children: [
+                  _BackButton(onTap: onBackTap),
+                  const SizedBox(width: 10),
+                  if (phase != null)
+                    Flexible(child: _BiomeCard(phase: phase)),
+                  const Spacer(),
+                  _ScoreCard(score: service.score),
+                  const Spacer(),
+                  Flexible(
+                    flex: 2,
+                    child: _ConnectionCard(made: made, total: total),
+                  ),
+                  const Spacer(),
+                  _TimerCard(seconds: service.remainingSeconds),
+                  const SizedBox(width: 10),
+                  const AudioToggleButton(),
+                ],
+              );
+            },
           ),
         );
       },
@@ -92,7 +124,8 @@ class _HudCard extends StatelessWidget {
         color: const Color(0xFF0B3D22).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: (borderColor ?? const Color(0xFF2E7D32)).withValues(alpha: 0.65),
+          color: (borderColor ?? const Color(0xFF2E7D32))
+              .withValues(alpha: 0.65),
           width: 1.5,
         ),
         boxShadow: [
@@ -177,12 +210,15 @@ class _BiomeCard extends StatelessWidget {
         children: [
           Icon(_biomeIcon(), size: 18, color: const Color(0xFFBBF7D0)),
           const SizedBox(width: 6),
-          Text(
-            phase.name,
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFFF0FDF4),
+          Flexible(
+            child: Text(
+              phase.name,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.nunito(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFFF0FDF4),
+              ),
             ),
           ),
         ],
