@@ -90,6 +90,7 @@ class FoodWebGame extends FlameGame {
   }
 
   void loadPhase() {
+    AppColors.resetConnectionColorIndex();
     organismComponents.clear();
     connectionLines.clear();
     dragIndicator = null;
@@ -319,7 +320,7 @@ class FoodWebGame extends FlameGame {
 
         if (gameService.isConnectionCorrect(sourceId, targetId)) {
           AudioService.instance.playCorrect();
-          line.flashThenColor(AppColors.connectionLine);
+          line.flashThenColor(AppColors.nextConnectionColor());
           _animatePredatorLunge(source, target);
           _scheduleParticles(particleCenter, true);
           onConnectionResult?.call(
@@ -418,13 +419,10 @@ class FoodWebGame extends FlameGame {
 
   void _animateConnectionColors() {
     final wrong = gameService.wrongConnections;
-    final correct = gameService.correctConnections;
     for (final line in connectionLines) {
       final key = '${line.sourceId}-${line.targetId}';
       if (wrong.contains(key)) {
         line.animateColor(AppColors.connectionError);
-      } else if (correct.contains(key)) {
-        line.animateColor(AppColors.primary);
       }
     }
   }

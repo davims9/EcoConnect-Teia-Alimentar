@@ -50,4 +50,31 @@ class AppColors {
   static const Color connectionLineHover = Color(0xFF81C784);
   static const Color connectionError = Color(0xFFEF5350);
   static const Color organismBorder = Color(0xFF191C1B);
+
+  static const List<Color> connectionColors = [
+    Color(0xFF0072B2), // Azul
+    Color(0xFF009E73), // Verde
+    Color(0xFFF0E442), // Amarelo
+    Color(0xFF56B4E9), // Azul-claro
+    Color(0xFFE69F00), // Laranja
+    Color(0xFFCC79A7), // Magenta
+    Color(0xFF332288), // Azul-escuro
+    Color(0xFF44AA99), // Turquesa
+    Color(0xFF88CCEE), // Ciano-claro
+    Color(0xFF117733), // Verde-escuro
+    Color(0xFF999933), // Oliva
+    Color(0xFFAA4499), // Roxo
+  ];
+
+  static int _connectionColorIndex = 0;
+
+  static Color nextConnectionColor() {
+    final color = connectionColors[_connectionColorIndex];
+    _connectionColorIndex = (_connectionColorIndex + 1) % connectionColors.length;
+    return color;
+  }
+
+  static void resetConnectionColorIndex() {
+    _connectionColorIndex = 0;
+  }
 }
