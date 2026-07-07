@@ -393,7 +393,7 @@ class FoodWebGame extends FlameGame {
 
         if (gameService.isConnectionCorrect(sourceId, targetId)) {
           AudioService.instance.playCorrect();
-          line.flashThenColor(AppColors.connectionLine);
+          line.flashThenColor(AppColors.randomConnectionColor());
           _animatePredatorLunge(source, target);
           _scheduleParticles(particleCenter, true);
           onConnectionResult?.call(
@@ -498,7 +498,7 @@ class FoodWebGame extends FlameGame {
       if (wrong.contains(key)) {
         line.animateColor(AppColors.connectionError);
       } else if (correct.contains(key)) {
-        line.animateColor(AppColors.primary);
+        line.animateColor(AppColors.randomConnectionColor());
       }
     }
   }

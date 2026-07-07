@@ -124,7 +124,7 @@ class TutorialGame extends FoodWebGame {
       // Correct: Águia (id:7) → Coelho (id:3)  → key "3-7"
       if (preyId == 3 && predatorId == 7) {
         AudioService.instance.playCorrect();
-        line.flashThenColor(AppColors.connectionLine);
+        line.flashThenColor(AppColors.randomConnectionColor());
         _animatePredatorLunge(source, target);
         _scheduleParticles(particleCenter, true);
         tutorialCompleted = true;

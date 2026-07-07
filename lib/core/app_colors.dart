@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -50,4 +52,19 @@ class AppColors {
   static const Color connectionLineHover = Color(0xFF81C784);
   static const Color connectionError = Color(0xFFEF5350);
   static const Color organismBorder = Color(0xFF191C1B);
+
+  static final Random _random = Random();
+
+  /// Returns a random vibrant, light color excluding red tones.
+  static Color randomConnectionColor() {
+    double hue;
+    do {
+      hue = _random.nextDouble() * 360;
+    } while (hue < 30 || hue > 340);
+
+    final saturation = 0.6 + _random.nextDouble() * 0.4;
+    final lightness = 0.55 + _random.nextDouble() * 0.25;
+
+    return HSLColor.fromAHSL(1.0, hue, saturation, lightness).toColor();
+  }
 }
