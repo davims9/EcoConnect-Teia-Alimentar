@@ -1,4 +1,4 @@
-# EcoConnect: Teia Alimentar
+# EConnect: Teia Alimentar
 
 Jogo educacional onde o jogador constrói teias alimentares conectando organismos de diferentes biomas. Desenvolvido em **Flutter** com **Flame Engine** e **SQLite**, com wrapper web em **Svelte**.
 

@@ -19,7 +19,7 @@ class FoodWebApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => GameService(),
       child: MaterialApp(
-        title: 'EcoConnect: Teia Alimentar',
+        title: 'EConnect: Teia Alimentar',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
         home: const HomeScreen(),
