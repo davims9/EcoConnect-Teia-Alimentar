@@ -50,6 +50,14 @@ class GameService extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   int get remainingSeconds => _remainingSeconds;
   int get totalPhaseTime => _totalPhaseTime;
+  
+  int get correctCount {
+    int count = 0;
+    for (final key in _playerConnections) {
+      if (_correctConnections.contains(key)) count++;
+    }
+    return count;
+  }
 
   Future<void> refreshUnlockStatus() async {
     _phaseUnlockStatus = {};
@@ -145,7 +153,7 @@ class GameService extends ChangeNotifier {
       }
     }
 
-    _errors = _correctConnections.length - correctCount;
+    _errors += _correctConnections.length - correctCount;
     _score = _scoringService.calculateSubmitScore(
       correctCount,
       _correctConnections.length,
@@ -163,7 +171,10 @@ class GameService extends ChangeNotifier {
   Future<void> saveScore() async {
     if (_currentPhase == null || !_phaseComplete) return;
     try {
-      final correctCount = _correctConnections.length - _errors;
+      int correctCount = 0;
+      for (final key in _playerConnections) {
+        if (_correctConnections.contains(key)) correctCount++;
+      }
       final score = Score(
         phaseId: _currentPhase!.id!,
         playerName: _playerName,
@@ -215,6 +226,12 @@ class GameService extends ChangeNotifier {
 
   void clearError() {
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  void registerError() {
+    if (_submitted || _phaseComplete) return;
+    _errors++;
     notifyListeners();
   }
 
