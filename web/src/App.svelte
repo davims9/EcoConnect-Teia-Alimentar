@@ -12,7 +12,7 @@
   <div class="hero">
     <div class="hero-content">
       <div class="emblem"></div>
-      <h1 class="title">ECOCONNECT</h1>
+      <h1 class="title">ECONNECT</h1>
       <h2 class="subtitle-main">TEIA ALIMENTAR</h2>
       <p class="desc">
         Construa teias alimentares e descubra os ecossistemas!
@@ -25,7 +25,7 @@
       <iframe
         class="game-iframe"
         src={iframeSrc}
-        title="EcoConnect App"
+        title="EConnect App"
         allow="camera; microphone; autoplay"
       ></iframe>
     </div>
