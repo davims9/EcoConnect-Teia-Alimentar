@@ -84,12 +84,12 @@ Não precisamos copiar a referência inteira agora. O objetivo é adaptar a ling
 * botão pressionado
 * celebrações
 
-Verde Floresta: #0B3D22
-Verde Folha: #37B24D
-Verde Brilho: #A3E635
-Dourado: #FACC15
-Azul Dica: #38BDF8
-Roxo Topo: #A78BFA
+| Verde Floresta | #0B3D22
+| Verde Folha | #37B24D
+| Verde Brilho | #A3E635
+| Dourado | #FACC15
+| Azul Dica | #38BDF8
+| Roxo Topo | #A78BFA
 Vermelho Erro: #F87171
 Laranja Alerta: #FDBA74
 Branco Texto: #F8FAFC
