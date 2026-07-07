@@ -22,24 +22,37 @@ import 'audio_toggle_button.dart';
 /// | Background         | #0B3D22 |
 /// | Border / glow      | #2E7D32 |
 ///
-/// **Layout strategy (wide ≥ 650 dp):**
+/// **Layout strategy (wide ≥ 600 dp):**
 /// A centered row capped at 1000 dp max-width with proportional flexes
 /// — connection card gets flex 5, biome and score get flex 3 each.
 ///
-/// **Layout strategy (compact < 650 dp):**
-/// A scrollable horizontal row with shorter labels and no progress bar.
+/// **Layout strategy (compact < 600 dp):**
+/// A two‑row column: top row has back‑button + biome name + audio‑toggle;
+/// bottom row has score, connection‑with‑bar and timer cards spread evenly.
 class GameTopHud extends StatelessWidget {
   final VoidCallback onBackTap;
 
   const GameTopHud({super.key, required this.onBackTap});
 
-  static const double _compactBreakpoint = 650;
+  // -- Breakpoints ----------------------------------------------------------
+  static const double _compactBreakpoint = 600;
   static const double _maxContainerWidth = 1000;
+
+  // -- Wide layout tokens ---------------------------------------------------
   static const double _cardHeight = 48;
   static const double _iconSize = 22;
   static const double _fontSize = 16;
   static const double _gap = 14;
-  static const double _compactGap = 8;
+
+  // -- Compact layout tokens (portrait / narrow) ----------------------------
+  static const double _compactCardHeight = 36;
+  static const double _compactButtonSize = 36;
+  static const double _compactIconSize = 20;   // biome icon
+  static const double _compactIconSmall = 16;  // stats icons
+  static const double _compactFontSize = 12;   // stats font
+  static const double _compactBiomeFont = 16;  // biome name font
+  static const double _compactGap = 6;
+  static const double _compactPadding = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -97,24 +110,49 @@ class GameTopHud extends StatelessWidget {
         final gap = compact ? _compactGap : _gap;
 
         if (compact) {
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _BackButton(onTap: onBackTap),
-                SizedBox(width: gap),
-                if (phase != null) _BiomeCard(phase: phase, compact: true),
-                SizedBox(width: gap),
-                _ScoreCard(score: score, compact: true),
-                SizedBox(width: gap),
-                _ConnectionCard(made: made, total: total, compact: true),
-                SizedBox(width: gap),
-                _TimerCard(seconds: seconds),
-                SizedBox(width: gap),
-                const AudioToggleButton(),
-              ],
-            ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Row 1 — header: back, biome name, audio toggle
+              Row(
+                children: [
+                  _BackButton(onTap: onBackTap, compact: true),
+                  SizedBox(width: _compactGap),
+                  if (phase != null)
+                    Expanded(
+                      child: _BiomeCard(phase: phase, compact: true),
+                    ),
+                  if (phase != null) SizedBox(width: _compactGap),
+                  // Shrink the 48 px AudioToggleButton to compact size
+                  SizedBox(
+                    width: _compactButtonSize,
+                    height: _compactButtonSize,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: const AudioToggleButton(),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: _compactGap),
+              // Row 2 — stats: score, connections, timer
+              Row(
+                children: [
+                  Expanded(
+                    child: _ScoreCard(score: score, compact: true),
+                  ),
+                  SizedBox(width: _compactGap),
+                  Expanded(
+                    child:
+                        _ConnectionCard(made: made, total: total, compact: true),
+                  ),
+                  SizedBox(width: _compactGap),
+                  Expanded(
+                    child: _TimerCard(seconds: seconds, compact: true),
+                  ),
+                ],
+              ),
+            ],
           );
         }
 
@@ -161,18 +199,25 @@ class GameTopHud extends StatelessWidget {
 class _HudCard extends StatelessWidget {
   final Widget child;
   final Color? borderColor;
+  final bool compact;
 
-  const _HudCard({required this.child, this.borderColor});
+  const _HudCard({
+    required this.child,
+    this.borderColor,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: GameTopHud._cardHeight,
+      height: compact ? GameTopHud._compactCardHeight : GameTopHud._cardHeight,
       clipBehavior: Clip.hardEdge,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? GameTopHud._compactPadding : 16,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(compact ? 10 : 14),
         border: Border.all(
           color: (borderColor ?? const Color(0xFF2E7D32))
               .withValues(alpha: 0.65),
@@ -214,16 +259,21 @@ TextStyle _hudText({
 /// Circular back / home button (48 × 48, matches [AudioToggleButton]).
 class _BackButton extends StatelessWidget {
   final VoidCallback onTap;
+  final bool compact;
 
-  const _BackButton({required this.onTap});
+  const _BackButton({required this.onTap, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
+    final size =
+        compact ? GameTopHud._compactButtonSize : GameTopHud._cardHeight;
+    final iconSize =
+        compact ? GameTopHud._compactIconSize : GameTopHud._iconSize;
     return HoverButton(
       onTap: onTap,
       child: Container(
-        width: GameTopHud._cardHeight,
-        height: GameTopHud._cardHeight,
+        width: size,
+        height: size,
         decoration: BoxDecoration(
           color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
           shape: BoxShape.circle,
@@ -239,10 +289,10 @@ class _BackButton extends StatelessWidget {
             ),
           ],
         ),
-        child: const Icon(
+        child: Icon(
           Icons.arrow_back_rounded,
-          color: Color(0xFFF0FDF4),
-          size: 22,
+          color: const Color(0xFFF0FDF4),
+          size: iconSize,
         ),
       ),
     );
@@ -274,18 +324,21 @@ class _BiomeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _HudCard(
+      compact: compact,
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(_biomeIcon(), size: GameTopHud._iconSize,
+          Icon(_biomeIcon(),
+              size: compact ? GameTopHud._compactIconSize : GameTopHud._iconSize,
               color: const Color(0xFFBBF7D0)),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              phase?.name ?? '',
-              overflow: TextOverflow.ellipsis,
-              style: _hudText(),
+          SizedBox(width: compact ? 6 : 8),
+          Text(
+            phase?.name ?? '',
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: _hudText(
+              size: compact ? GameTopHud._compactBiomeFont : GameTopHud._fontSize,
             ),
           ),
         ],
@@ -304,21 +357,23 @@ class _ScoreCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _HudCard(
+      compact: compact,
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(Icons.star_rounded, size: GameTopHud._iconSize,
+          Icon(Icons.star_rounded,
+              size: compact ? GameTopHud._compactIconSmall : GameTopHud._iconSize,
               color: const Color(0xFFFFD43B)),
-          const SizedBox(width: 8),
-          Flexible(
-            child: Text(
-              compact ? '$score' : 'Pontos: $score',
-              overflow: TextOverflow.ellipsis,
-              style: _hudText(
-                weight: FontWeight.w800,
-                color: const Color(0xFFFFD43B),
-              ),
+          SizedBox(width: compact ? 4 : 8),
+          Text(
+            compact ? '$score' : 'Pontos: $score',
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: _hudText(
+              size: compact ? GameTopHud._compactFontSize : GameTopHud._fontSize,
+              weight: FontWeight.w800,
+              color: const Color(0xFFFFD43B),
             ),
           ),
         ],
@@ -344,6 +399,7 @@ class _ConnectionCard extends StatelessWidget {
     final progress = total > 0 ? (made / total).clamp(0.0, 1.0) : 0.0;
 
     return _HudCard(
+      compact: compact,
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -354,39 +410,39 @@ class _ConnectionCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.link_rounded, size: 20,
+              Icon(Icons.link_rounded,
+                  size: compact ? GameTopHud._compactIconSmall : 20,
                   color: const Color(0xFF7ED957)),
-              SizedBox(width: compact ? 6 : 8),
-              Flexible(
-                child: Text(
-                  compact ? '$made/$total' : '$made/$total conexões',
-                  overflow: TextOverflow.ellipsis,
-                  style: _hudText(),
+              SizedBox(width: compact ? 4 : 6),
+              Text(
+                compact ? '$made/$total' : '$made/$total conexões',
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: _hudText(
+                  size: compact ? GameTopHud._compactFontSize : GameTopHud._fontSize,
                 ),
               ),
             ],
           ),
-          // --- Progress bar (wide only) ---
-          if (!compact) ...[
-            const SizedBox(height: 4),
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(3),
-              ),
-              child: FractionallySizedBox(
-                alignment: Alignment.centerLeft,
-                widthFactor: progress,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF7ED957),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
+          // --- Progress bar ---
+          const SizedBox(height: 3),
+          Container(
+            height: compact ? 3 : 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(compact ? 2 : 3),
+            ),
+            child: FractionallySizedBox(
+              alignment: Alignment.centerLeft,
+              widthFactor: progress,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF7ED957),
+                  borderRadius: BorderRadius.circular(compact ? 2 : 3),
                 ),
               ),
             ),
-          ],
+          ),
         ],
       ),
     );
@@ -396,8 +452,9 @@ class _ConnectionCard extends StatelessWidget {
 /// Timer card — clock icon + MM:SS.
 class _TimerCard extends StatelessWidget {
   final int seconds;
+  final bool compact;
 
-  const _TimerCard({required this.seconds});
+  const _TimerCard({required this.seconds, this.compact = false});
 
   String _formatTime(int s) {
     final m = s ~/ 60;
@@ -409,20 +466,24 @@ class _TimerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final low = seconds <= 30;
     return _HudCard(
+      compact: compact,
       borderColor: low ? const Color(0xFFEF4444) : null,
       child: Row(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
             low ? Icons.timer_off_rounded : Icons.timer_outlined,
-            size: GameTopHud._iconSize,
+            size: compact ? GameTopHud._compactIconSmall : GameTopHud._iconSize,
             color: low ? const Color(0xFFEF4444) : const Color(0xFFBBF7D0),
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: compact ? 4 : 8),
           Text(
             _formatTime(seconds),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             style: _hudText(
+              size: compact ? GameTopHud._compactFontSize : GameTopHud._fontSize,
               color: low ? const Color(0xFFEF4444) : const Color(0xFFF0FDF4),
             ),
           ),

@@ -76,33 +76,36 @@ class _PhasesScreenState extends State<PhasesScreen>
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
-      child: Row(
-        children: [
-          _buildBackButton(),
-          const SizedBox(width: 8),
-          Text(
-            'SELECIONAR FASE',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 4,
-              color: const Color(0xFFE8F5E9),
-              shadows: [
-                Shadow(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-                  blurRadius: 12,
+        child: Row(
+          children: [
+            _buildBackButton(),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                'SELECIONAR FASE',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 4,
+                  color: const Color(0xFFE8F5E9),
+                  shadows: [
+                    Shadow(
+                      color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                      blurRadius: 12,
+                    ),
+                    const Shadow(
+                      color: Color(0xFF1B5E20),
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
-                const Shadow(
-                  color: Color(0xFF1B5E20),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
 
   Widget _buildBackButton() {
