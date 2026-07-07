@@ -327,6 +327,7 @@ class FoodWebGame extends FlameGame {
             _correctMessage(predatorName, preyName),
           );
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
+          gameService.registerError();
           AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
@@ -337,6 +338,7 @@ class FoodWebGame extends FlameGame {
           );
           _scheduleWrongLineRemoval(line, sourceId, targetId);
         } else {
+          gameService.registerError();
           AudioService.instance.playWrong();
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
