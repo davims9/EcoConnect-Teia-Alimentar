@@ -18,7 +18,6 @@ import 'components/drag_indicator.dart';
 import 'components/background_component.dart';
 import 'effects/connection_effect.dart';
 import 'systems/connection_system.dart';
-import 'habitat_layout.dart';
 
 /// Vertical zones for organic positioning based on real-world habitat.
 enum _VerticalZone { top, middle, bottom }
@@ -115,8 +114,7 @@ class FoodWebGame extends FlameGame {
       size.y / 6,
     ).clamp(minOrganismSize, maxOrganismSize);
 
-    final biome = gameService.currentPhase?.biome ?? '';
-    final positions = _generateZonedPositions(organisms, dynamicSize, biome);
+    final positions = _generateQuadrantPositions(organisms, dynamicSize);
 
     for (int i = 0; i < organisms.length; i++) {
       final component = OrganismComponent(
@@ -133,58 +131,7 @@ class FoodWebGame extends FlameGame {
   static _VerticalZone _zoneFor(int? organismId) =>
       _zoneMap[organismId] ?? _VerticalZone.bottom;
 
-  List<Vector2> _generateZonedPositions(
-    List<Organism> organisms,
-    double organismSize,
-    String biome,
-  ) {
-    if (organisms.isEmpty || size.x <= 0 || size.y <= 0) return [];
-
-    // ── Manual positions for Campo, Floresta, Pantanal ──
-    if (HabitatLayout.hasLayout(biome)) {
-      return _applyManualPositions(organisms, organismSize, biome);
-    }
-
-    // ── Fallback: zone-based grid (unchanged, used for Oceano) ──
-    return _generateGridPositions(organisms, organismSize);
-  }
-
-  /// Places each organism at its hand-authored position from
-  /// [HabitatLayout] with no jitter or redistribution.
-  List<Vector2> _applyManualPositions(
-    List<Organism> organisms,
-    double organismSize,
-    String biome,
-  ) {
-    final double sideMargin = (size.x * 0.05).clamp(15.0, 60.0);
-    final double topMargin = (size.y * 0.15).clamp(60.0, 120.0);
-    final double bottomMargin = (size.y * 0.08).clamp(40.0, 80.0);
-
-    final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
-    final safeHeight = (size.y - topMargin - bottomMargin).clamp(
-      200.0,
-      double.infinity,
-    );
-
-    final halfSize = organismSize / 2;
-    final result = List<Vector2>.filled(organisms.length, Vector2.zero());
-
-    for (int i = 0; i < organisms.length; i++) {
-      final org = organisms[i];
-      final pos = HabitatLayout.getPosition(biome, org.id!) ?? const Offset(0.50, 0.50);
-      result[i] = Vector2(
-        (sideMargin + pos.dx * safeWidth)
-            .clamp(sideMargin + halfSize, sideMargin + safeWidth - halfSize),
-        (topMargin + pos.dy * safeHeight)
-            .clamp(topMargin + halfSize, topMargin + safeHeight - halfSize),
-      );
-    }
-    return result;
-  }
-
-  /// Zone-based grid positioning (original logic, unchanged).
-  /// Used as fallback for Oceano.
-  List<Vector2> _generateGridPositions(
+  List<Vector2> _generateQuadrantPositions(
     List<Organism> organisms,
     double organismSize,
   ) {
@@ -197,141 +144,84 @@ class FoodWebGame extends FlameGame {
     final double bottomMargin = (size.y * 0.1).clamp(50.0, 100.0);
 
     final safeWidth = (size.x - 2 * sideMargin).clamp(200.0, double.infinity);
-    final safeHeight = (size.y - topMargin - bottomMargin).clamp(
-      200.0,
-      double.infinity,
-    );
+    final safeHeight = (size.y - topMargin - bottomMargin).clamp(200.0, double.infinity);
 
-    final zoneRanges = <_VerticalZone, Vector2>{
-      _VerticalZone.top: Vector2(0.00, 0.30),
-      _VerticalZone.middle: Vector2(0.33, 0.63),
-      _VerticalZone.bottom: Vector2(0.66, 1.00),
+    final cx = sideMargin + safeWidth / 2;
+    final cy = topMargin + safeHeight * 0.30;
+
+    // Definição dos limites dos 4 quadrantes
+    // Quadrante 0: topLeft, 1: topRight, 2: bottomLeft, 3: bottomRight
+    final quadrantsBounds = [
+      Rect.fromLTRB(sideMargin, topMargin, cx, cy),
+      Rect.fromLTRB(cx, topMargin, sideMargin + safeWidth, cy),
+      Rect.fromLTRB(sideMargin, cy, cx, topMargin + safeHeight),
+      Rect.fromLTRB(cx, cy, sideMargin + safeWidth, topMargin + safeHeight),
+    ];
+
+    // Para distribuir as cartas, rastreamos quantos organismos estão em cada quadrante
+    final organismsPerQuadrant = <int, List<Vector2>>{
+      0: [], 1: [], 2: [], 3: []
     };
 
-    const edgeGap = 15.0;
-    final idealDist = organismSize + edgeGap;
-
-    final grouped = <_VerticalZone, List<int>>{
-      for (final z in _VerticalZone.values) z: <int>[],
-    };
-    for (int i = 0; i < organisms.length; i++) {
-      grouped[_zoneFor(organisms[i].id)]!.add(i);
-    }
+    int topLeftCount = 0;
+    int topRightCount = 0;
+    int bottomLeftCount = 0;
+    int bottomRightCount = 0;
 
     final result = List<Vector2>.filled(organisms.length, Vector2.zero());
 
-    for (final zone in _VerticalZone.values) {
-      final indices = grouped[zone]!;
-      if (indices.isEmpty) continue;
+    for (int i = 0; i < organisms.length; i++) {
+      final orgId = organisms[i].id;
+      final zone = _zoneFor(orgId);
+      
+      int assignedQuadrant;
 
-      final yMin = topMargin + zoneRanges[zone]!.x * safeHeight;
-      final yMax = topMargin + zoneRanges[zone]!.y * safeHeight;
-      final zoneHeight = yMax - yMin;
-
-      final count = indices.length;
-
-      // --- Calculate grid dimensions ---
-      final maxCols = ((safeWidth - organismSize) / idealDist).floor() + 1;
-
-      int cols;
-      int rows;
-      double spacingX;
-      double spacingY;
-
-      if (count <= 1) {
-        cols = 1;
-        rows = 1;
-        spacingX = 0;
-        spacingY = 0;
-      } else if (count <= maxCols) {
-        cols = count;
-        rows = 1;
-        spacingX = (safeWidth - organismSize) / (count - 1);
-        spacingY = 0;
+      if (zone == _VerticalZone.top) {
+        if (topLeftCount < topRightCount) {
+          assignedQuadrant = 0;
+        } else if (topRightCount < topLeftCount) {
+          assignedQuadrant = 1;
+        } else {
+          assignedQuadrant = random.nextBool() ? 0 : 1;
+        }
+        if (assignedQuadrant == 0) topLeftCount++; else topRightCount++;
       } else {
-        final maxRowsThatFit = (zoneHeight / organismSize).floor();
-        final idealRows = (count + maxCols - 1) ~/ maxCols;
-
-        if (idealRows <= maxRowsThatFit) {
-          cols = maxCols;
-          rows = idealRows;
-          spacingX = (safeWidth - organismSize) / (maxCols - 1);
-          final neededVertical = organismSize + idealDist * (rows - 1);
-          spacingY = neededVertical <= zoneHeight
-              ? idealDist
-              : (zoneHeight - organismSize) / (rows - 1);
-        } else if (maxRowsThatFit >= 2) {
-          rows = maxRowsThatFit;
-          cols = (count + rows - 1) ~/ rows;
-          spacingX = (safeWidth - organismSize) / (cols - 1);
-          spacingY = (zoneHeight - organismSize) / (rows - 1);
+        // _VerticalZone.bottom ou _VerticalZone.middle vão para a parte inferior (70% do espaço)
+        if (bottomLeftCount < bottomRightCount) {
+          assignedQuadrant = 2;
+        } else if (bottomRightCount < bottomLeftCount) {
+          assignedQuadrant = 3;
         } else {
-          rows = 1;
-          cols = count;
-          spacingX = (safeWidth - organismSize) / (count - 1);
-          spacingY = 0;
+          assignedQuadrant = random.nextBool() ? 2 : 3;
         }
+        if (assignedQuadrant == 2) bottomLeftCount++; else bottomRightCount++;
       }
 
-      if (spacingY < organismSize && rows > 1) {
-        if ((rows - 1) * organismSize + organismSize > zoneHeight) {
-          spacingY = (zoneHeight - organismSize) / (rows - 1);
-          if (spacingY < 0) spacingY = 0;
+      final bounds = quadrantsBounds[assignedQuadrant];
+      
+      // Gera posição aleatória garantindo que não sobreponha outros no mesmo quadrante
+      Vector2 pos = Vector2.zero();
+      bool valid = false;
+      int attempts = 0;
+
+      while (!valid && attempts < 100) {
+        // Padding para não encostar exatamente nas bordas do quadrante
+        final rx = bounds.left + organismSize / 2 + random.nextDouble() * (bounds.width - organismSize);
+        final ry = bounds.top + organismSize / 2 + random.nextDouble() * (bounds.height - organismSize);
+        pos = Vector2(rx, ry);
+
+        valid = true;
+        for (final otherPos in organismsPerQuadrant[assignedQuadrant]!) {
+          if (pos.distanceTo(otherPos) < organismSize * 1.2) {
+            valid = false;
+            break;
+          }
         }
+        attempts++;
       }
 
-      final itemsPerRow = <int>[];
-      for (int r = 0; r < rows; r++) {
-        final items = (r < rows - 1) ? cols : count - r * cols;
-        itemsPerRow.add(items);
-      }
-
-      final assignments = <(int row, int col)>[];
-      for (int r = 0; r < rows; r++) {
-        for (int c = 0; c < itemsPerRow[r]; c++) {
-          assignments.add((r, c));
-        }
-      }
-      assignments.shuffle(random);
-
-      for (int s = 0; s < count; s++) {
-        final idx = indices[s];
-        final (int row, int col) = assignments[s];
-
-        final itemsInThisRow = itemsPerRow[row];
-        final double thisRowSpacingX;
-        if (itemsInThisRow <= 1) {
-          thisRowSpacingX = 0;
-        } else {
-          thisRowSpacingX = (safeWidth - organismSize) / (itemsInThisRow - 1);
-        }
-
-        double posX = sideMargin + organismSize / 2 + col * thisRowSpacingX;
-
-        double posY;
-        if (rows <= 1) {
-          posY = yMin + zoneHeight / 2;
-        } else {
-          posY = yMin + organismSize / 2 + row * spacingY;
-        }
-
-        if (thisRowSpacingX > organismSize + 5) {
-          final jitterX = (thisRowSpacingX - organismSize) * 0.3;
-          posX += (random.nextDouble() - 0.5) * jitterX;
-        }
-        if (spacingY > organismSize + 5) {
-          final jitterY = (spacingY - organismSize) * 0.3;
-          posY += (random.nextDouble() - 0.5) * jitterY;
-        }
-
-        posX = posX.clamp(
-          sideMargin + organismSize / 2,
-          sideMargin + safeWidth - organismSize / 2,
-        );
-        posY = posY.clamp(yMin + organismSize / 2, yMax - organismSize / 2);
-
-        result[idx] = Vector2(posX, posY);
-      }
+      organismsPerQuadrant[assignedQuadrant]!.add(pos);
+      result[i] = pos;
     }
 
     return result;
