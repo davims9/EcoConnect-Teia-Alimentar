@@ -17,7 +17,7 @@ dependencies:
   provider: ^6.1.5
   cupertino_icons: ^1.0.8
   sqflite_common_ffi: ^2.4.0+3
-  google_fonts: ^6.2.1
+  google_fonts: ^8.1.0
 
 dev_dependencies:
   flutter_test:
