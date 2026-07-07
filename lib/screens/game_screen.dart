@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flame/game.dart' as flame;
 import 'package:provider/provider.dart';
-import '../core/app_colors.dart';
 import '../game/food_web_game.dart';
 import '../services/game_service.dart';
 import '../services/audio_service.dart';
 import '../widgets/stars_display.dart';
 import '../widgets/hover_button.dart';
+import '../widgets/game_top_hud.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -55,69 +55,6 @@ class _GameScreenState extends State<GameScreen> {
         }
       },
       child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF0D2B1A).withValues(alpha: 0.92),
-          elevation: 0,
-          surfaceTintColor: Colors.transparent,
-          titleSpacing: 0,
-          toolbarHeight: 64,
-          leading: _buildBackButton(),
-          title: Consumer<GameService>(
-            builder: (context, service, _) => Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  service.currentPhase?.name ?? 'Jogo',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFFE8F5E9),
-                    fontSize: 16,
-                    shadows: [
-                      Shadow(
-                        color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  'Conecte o predador a presa',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: const Color(0xFF81C784).withValues(alpha: 0.6),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            Consumer<GameService>(
-              builder: (context, service, _) => Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _chip(
-                      Icons.timer_outlined,
-                      _formatTime(service.remainingSeconds),
-                      service.remainingSeconds <= 30
-                          ? const Color(0xFFEF5350)
-                          : const Color(0xFFA5D6A7),
-                    ),
-                    const SizedBox(width: 8),
-                    _chip(
-                      Icons.eco,
-                      '${service.score}',
-                      const Color(0xFF4CAF50),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
         body: _buildBackground(
           child: Consumer<GameService>(
             builder: (context, service, _) {
@@ -133,30 +70,36 @@ class _GameScreenState extends State<GameScreen> {
               }
               return Material(
                 type: MaterialType.transparency,
-                child: Column(
-                children: [
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        flame.GameWidget(game: _game),
-                        if (_connectionMessage != null)
-                          Positioned(
-                            top: MediaQuery.of(context).size.height * 0.25,
-                            left: 24,
-                            right: 24,
-                            child: _buildConnectionMessage(),
-                          ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: _buildHud(service),
-                        ),
-                      ],
+                child: Stack(
+                  children: [
+                    // Game fills the entire available area.
+                    flame.GameWidget(game: _game),
+                    // Top HUD — unconditionally overlaid above the game.
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: GameTopHud(
+                        onBackTap: _showExitConfirmation,
+                      ),
                     ),
-                  ),
-                ],
-              ),
+                    // Connection feedback overlay (mid-screen).
+                    if (_connectionMessage != null)
+                      Positioned(
+                        top: MediaQuery.of(context).size.height * 0.25,
+                        left: 24,
+                        right: 24,
+                        child: _buildConnectionMessage(),
+                      ),
+                    // Bottom HUD — submit / status buttons.
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: _buildHud(service),
+                    ),
+                  ],
+                ),
               );
             },
           ),
@@ -183,58 +126,6 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  Widget _buildBackButton() {
-    return HoverButton(
-      onTap: () => _showExitConfirmation(),
-      child: Container(
-        margin: const EdgeInsets.only(left: 8),
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1A3A24).withValues(alpha: 0.8),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: const Color(0xFF2E7D32).withValues(alpha: 0.4),
-            width: 1.5,
-          ),
-        ),
-        child: const Icon(
-          Icons.arrow_back_rounded,
-          color: Color(0xFF81C784),
-          size: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _chip(IconData icon, String text, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color.withValues(alpha: 0.25),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _formatTime(int seconds) {
     final min = seconds ~/ 60;
     final sec = seconds % 60;
@@ -242,7 +133,6 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildHud(GameService service) {
-    final total = service.correctConnections.length;
     final made = service.playerConnections.length;
     final canSubmit = made > 0 && !service.submitted && !service.phaseComplete;
 
@@ -265,33 +155,8 @@ class _GameScreenState extends State<GameScreen> {
         ),
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1A3A24).withValues(alpha: 0.8),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: const Color(0xFF2E7D32).withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.link, size: 14, color: const Color(0xFF81C784).withValues(alpha: 0.7)),
-                const SizedBox(width: 6),
-                Text(
-                  '$made/$total',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFE8F5E9).withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
-            ),
-          ),
           if (canSubmit)
             HoverButton(
               onTap: () => _onSubmit(service),
