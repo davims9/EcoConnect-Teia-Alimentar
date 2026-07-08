@@ -1,4 +1,4 @@
-# Análise do Estado Atual — EcoConnect: Teia Alimentar
+# Análise do Estado Atual — ECOnnect: Teia Alimentar
 
 > **Data:** Julho de 2026  
 > **Propósito:** Diagnóstico completo do projeto para orientar a remodelagem com foco em experiência infantil, clareza pedagógica, UX/UI, arquitetura, escalabilidade e potencial de evolução.  
@@ -29,7 +29,7 @@
 
 ### 1.1 Proposta atual
 
-O **EcoConnect: Teia Alimentar** é um jogo educacional que ensina conceitos de ecologia e cadeias/teias alimentares. O jogador constrói teias alimentares conectando organismos de diferentes biomas brasileiros por meio de uma mecânica de arrastar (drag) entre organismos.
+O **ECOnnect: Teia Alimentar** é um jogo educacional que ensina conceitos de ecologia e cadeias/teias alimentares. O jogador constrói teias alimentares conectando organismos de diferentes biomas brasileiros por meio de uma mecânica de arrastar (drag) entre organismos.
 
 ### 1.2 Fluxo atual do jogador
 
@@ -886,7 +886,7 @@ Home → Personagem guia (ilustração estática + texto)
 
 ### Diagnóstico geral
 
-O **EcoConnect: Teia Alimentar** é um projeto sólido em termos de arquitetura e engenharia, com boas práticas de separação de camadas, uso de padrões como Repository e Provider, e uma base de código organizada. A mecânica principal (arrastar para conectar) está funcional e o fluxo de telas é coerente.
+O **ECOnnect: Teia Alimentar** é um projeto sólido em termos de arquitetura e engenharia, com boas práticas de separação de camadas, uso de padrões como Repository e Provider, e uma base de código organizada. A mecânica principal (arrastar para conectar) está funcional e o fluxo de telas é coerente.
 
 No entanto, o projeto **priorizou a infraestrutura técnica em detrimento da experiência do usuário e do conteúdo pedagógico**. O jogo funciona tecnicamente mas não encanta, não ensina de forma explícita e não motiva a criança a continuar jogando além da primeira sessão.
 
