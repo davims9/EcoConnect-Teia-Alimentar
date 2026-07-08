@@ -59,7 +59,7 @@ class GameTopHud extends StatelessWidget {
     return Consumer<GameService>(
       builder: (context, service, _) {
         final phase = service.currentPhase;
-        final made = service.playerConnections.length;
+        final correct = service.correctCount;
         final total = service.correctConnections.length;
 
         return Container(
@@ -84,7 +84,7 @@ class GameTopHud extends StatelessWidget {
           child: _buildRow(
             phase: phase,
             score: service.score,
-            made: made,
+            correct: correct,
             total: total,
             seconds: service.remainingSeconds,
           ),
@@ -100,7 +100,7 @@ class GameTopHud extends StatelessWidget {
   Widget _buildRow({
     Phase? phase,
     required int score,
-    required int made,
+    required int correct,
     required int total,
     required int seconds,
   }) {
@@ -144,7 +144,7 @@ class GameTopHud extends StatelessWidget {
                   SizedBox(width: _compactGap),
                   Expanded(
                     child:
-                        _ConnectionCard(made: made, total: total, compact: true),
+                        _ConnectionCard(correct: correct, total: total, compact: true),
                   ),
                   SizedBox(width: _compactGap),
                   Expanded(
@@ -172,7 +172,7 @@ class GameTopHud extends StatelessWidget {
                 SizedBox(width: gap),
                 Expanded(
                   flex: 5,
-                  child: _ConnectionCard(made: made, total: total),
+                  child: _ConnectionCard(correct: correct, total: total),
                 ),
                 SizedBox(width: gap),
                 _TimerCard(seconds: seconds),
@@ -382,66 +382,138 @@ class _ScoreCard extends StatelessWidget {
   }
 }
 
-/// Connection progress card — icon + "N/M conexões" + progress bar (wide).
+/// Connection progress card — large "correct/total" number, "conexões" label,
+/// and an animated green gradient progress bar with glow.
+///
+/// Taller than the standard [GameTopHud._cardHeight] (56 px vs 48 px) to
+/// accommodate the larger number and progress bar while keeping the same
+/// visual language (dark-green translucent background, rounded border, glow).
 class _ConnectionCard extends StatelessWidget {
-  final int made;
+  final int correct;
   final int total;
   final bool compact;
 
   const _ConnectionCard({
-    required this.made,
+    required this.correct,
     required this.total,
     this.compact = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final progress = total > 0 ? (made / total).clamp(0.0, 1.0) : 0.0;
+    final progress = total > 0 ? (correct / total).clamp(0.0, 1.0) : 0.0;
 
-    return _HudCard(
-      compact: compact,
+    return Container(
+      height: compact ? 36 : 56,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: compact ? 4 : 8,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF2E7D32).withValues(alpha: 0.65),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
-        mainAxisSize: MainAxisSize.max,
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // --- Label ---
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Icon(Icons.link_rounded,
-                  size: compact ? GameTopHud._compactIconSmall : 20,
-                  color: const Color(0xFF7ED957)),
-              SizedBox(width: compact ? 4 : 6),
-              Text(
-                compact ? '$made/$total' : '$made/$total conexões',
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-                style: _hudText(
-                  size: compact ? GameTopHud._compactFontSize : GameTopHud._fontSize,
+          // --- Number row ---
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$correct',
+                  style: TextStyle(
+                    fontSize: compact ? 16 : 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFF0FDF4),
+                    height: 1.0,
+                    shadows: [
+                      Shadow(
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 1),
+                  child: Text(
+                    '/$total',
+                    style: TextStyle(
+                      fontSize: compact ? 12 : 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+                if (!compact) ...[
+                  const SizedBox(width: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: Text(
+                      'conexões',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFBBF7D0).withValues(alpha: 0.6),
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-          // --- Progress bar ---
-          const SizedBox(height: 3),
-          Container(
-            height: compact ? 3 : 4,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(compact ? 2 : 3),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: progress,
-              child: Container(
+          SizedBox(height: compact ? 2 : 4),
+          // --- Animated progress bar ---
+          TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: progress),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) {
+              return Container(
+                height: compact ? 5 : 6,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF7ED957),
-                  borderRadius: BorderRadius.circular(compact ? 2 : 3),
+                  borderRadius: BorderRadius.circular(3),
+                  color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
                 ),
-              ),
-            ),
+                child: FractionallySizedBox(
+                  alignment: Alignment.centerLeft,
+                  widthFactor: value,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF37B24D), Color(0xFF7ED957)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7ED957).withValues(alpha: 0.4),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
