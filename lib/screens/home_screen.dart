@@ -193,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen>
     return Column(
       children: [
         Text(
-          'ECOCONNECT',
+          'ECOnnect',
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: fontSize,

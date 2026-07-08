@@ -1,7 +1,7 @@
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'EConnect: Teia Alimentar';
+  static const String appName = 'ECOnnect: Teia Alimentar';
   static const int initialScore = 0;
   static const int basePointsPerCorrect = 100;
   static const int timeBonusMultiplier = 10;

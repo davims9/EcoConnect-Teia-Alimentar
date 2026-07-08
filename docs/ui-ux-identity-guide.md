@@ -1,8 +1,8 @@
-# Direção Visual — EcoConnect
+# Direção Visual — ECOnnect
 
 ## Objetivo
 
-Transformar o EcoConnect em uma experiência visualmente mais infantil, divertida e clara, sem alterar a mecânica principal de ligar predador e presa.
+Transformar o ECOnnect em uma experiência visualmente mais infantil, divertida e clara, sem alterar a mecânica principal de ligar predador e presa.
 
 O jogo deve parecer uma aventura ecológica, não apenas uma tela funcional com animais e linhas.
 
@@ -18,7 +18,7 @@ A referência desejada é um jogo infantil com:
 - sensação de descoberta;
 - interface amigável para crianças.
 
-Não precisamos copiar a referência inteira agora. O objetivo é adaptar a linguagem visual ao EcoConnect.
+Não precisamos copiar a referência inteira agora. O objetivo é adaptar a linguagem visual ao ECOnnect.
 
 ## Identidade visual
 
@@ -28,7 +28,7 @@ Não precisamos copiar a referência inteira agora. O objetivo é adaptar a ling
 - Visual alegre, natural e mágico.
 - Interface simples, mas com cara de jogo.
 
-## Paleta de Cores — EcoConnect
+## Paleta de Cores — ECOnnect
 
 ### Cores principais
 
