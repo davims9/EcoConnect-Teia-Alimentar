@@ -144,7 +144,7 @@ class GameTopHud extends StatelessWidget {
                   SizedBox(width: _compactGap),
                   Expanded(
                     child:
-                        _ConnectionCard(made: made, total: total, compact: true),
+                        _ConnectionCard(correct: correct, total: total, compact: true),
                   ),
                   SizedBox(width: _compactGap),
                   Expanded(
@@ -404,8 +404,11 @@ class _ConnectionCard extends StatelessWidget {
     final progress = total > 0 ? (correct / total).clamp(0.0, 1.0) : 0.0;
 
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      height: compact ? 36 : 56,
+      padding: EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: compact ? 4 : 8,
+      ),
       decoration: BoxDecoration(
         color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
         borderRadius: BorderRadius.circular(14),
@@ -427,54 +430,58 @@ class _ConnectionCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // --- Number row ---
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '$correct',
-                style: TextStyle(
-                  fontSize: compact ? 22 : 26,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFFF0FDF4),
-                  height: 1.0,
-                  shadows: [
-                    Shadow(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-                      blurRadius: 6,
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 1),
-                child: Text(
-                  '/$total',
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '$correct',
                   style: TextStyle(
-                    fontSize: compact ? 14 : 15,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
+                    fontSize: compact ? 16 : 26,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFF0FDF4),
                     height: 1.0,
+                    shadows: [
+                      Shadow(
+                        color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              if (!compact) ...[
-                const SizedBox(width: 6),
                 Padding(
                   padding: const EdgeInsets.only(bottom: 1),
                   child: Text(
-                    'conexões',
+                    '/$total',
                     style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: const Color(0xFFBBF7D0).withValues(alpha: 0.6),
+                      fontSize: compact ? 12 : 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
                       height: 1.0,
                     ),
                   ),
                 ),
+                if (!compact) ...[
+                  const SizedBox(width: 6),
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: Text(
+                      'conexões',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFBBF7D0).withValues(alpha: 0.6),
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: compact ? 2 : 4),
           // --- Animated progress bar ---
           TweenAnimationBuilder<double>(
             tween: Tween(begin: 0, end: progress),
@@ -482,7 +489,7 @@ class _ConnectionCard extends StatelessWidget {
             curve: Curves.easeOutCubic,
             builder: (context, value, _) {
               return Container(
-                height: 6,
+                height: compact ? 5 : 6,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(3),
                   color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
