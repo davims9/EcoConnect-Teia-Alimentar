@@ -382,12 +382,12 @@ class _ScoreCard extends StatelessWidget {
   }
 }
 
-/// Connection progress card — large "correct/total" number, "conexões" label,
+/// Connection progress card — "correct/total" number, "conexões" label,
 /// and an animated green gradient progress bar with glow.
 ///
-/// Taller than the standard [GameTopHud._cardHeight] (56 px vs 48 px) to
-/// accommodate the larger number and progress bar while keeping the same
-/// visual language (dark-green translucent background, rounded border, glow).
+/// Uses the standard [GameTopHud._cardHeight] (48 px / 36 px compact) via
+/// [_HudCard], with compact internal content (FittedBox, tight spacing,
+/// reduced font sizes) to prevent overflow.
 class _ConnectionCard extends StatelessWidget {
   final int correct;
   final int total;
@@ -403,119 +403,105 @@ class _ConnectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = total > 0 ? (correct / total).clamp(0.0, 1.0) : 0.0;
 
-    return Container(
-      height: compact ? 36 : 56,
-      padding: EdgeInsets.symmetric(
-        horizontal: 16,
-        vertical: compact ? 4 : 8,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B3D22).withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFF2E7D32).withValues(alpha: 0.65),
-          width: 1.5,
+    return _HudCard(
+      compact: compact,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          vertical: compact ? 4 : 6,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // --- Number row ---
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '$correct',
-                  style: TextStyle(
-                    fontSize: compact ? 16 : 26,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFFF0FDF4),
-                    height: 1.0,
-                    shadows: [
-                      Shadow(
-                        color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-                        blurRadius: 6,
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 1),
-                  child: Text(
-                    '/$total',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // --- Number row ---
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$correct',
                     style: TextStyle(
-                      fontSize: compact ? 12 : 15,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
+                      fontSize: compact ? 16 : 22,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFF0FDF4),
                       height: 1.0,
-                    ),
-                  ),
-                ),
-                if (!compact) ...[
-                  const SizedBox(width: 6),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 1),
-                    child: Text(
-                      'conexões',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFFBBF7D0).withValues(alpha: 0.6),
-                        height: 1.0,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          SizedBox(height: compact ? 2 : 4),
-          // --- Animated progress bar ---
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0, end: progress),
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeOutCubic,
-            builder: (context, value, _) {
-              return Container(
-                height: compact ? 5 : 6,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(3),
-                  color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
-                ),
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: value,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF37B24D), Color(0xFF7ED957)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF7ED957).withValues(alpha: 0.4),
+                      shadows: [
+                        Shadow(
+                          color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
                           blurRadius: 6,
                         ),
                       ],
                     ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 1),
+                    child: Text(
+                      '/$total',
+                      style: TextStyle(
+                        fontSize: compact ? 12 : 13,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFFBBF7D0).withValues(alpha: 0.7),
+                        height: 1.0,
+                      ),
+                    ),
+                  ),
+                  if (!compact) ...[
+                    const SizedBox(width: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 1),
+                      child: Text(
+                        'conexões',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFFBBF7D0).withValues(alpha: 0.6),
+                          height: 1.0,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(height: compact ? 2 : 3),
+            // --- Animated progress bar ---
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: progress),
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeOutCubic,
+              builder: (context, value, _) {
+                return Container(
+                  height: 5,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: const Color(0xFFF0FDF4).withValues(alpha: 0.12),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: value,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(3),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF37B24D), Color(0xFF7ED957)],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF7ED957).withValues(alpha: 0.4),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
