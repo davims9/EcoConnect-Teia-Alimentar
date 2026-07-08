@@ -46,8 +46,8 @@ class GameTopHud extends StatelessWidget {
 
   // -- Compact layout tokens (portrait / narrow) ----------------------------
   static const double _compactCardHeight = 36;
-  static const double _compactButtonSize = 36;
-  static const double _compactIconSize = 20;   // biome icon
+  static const double _compactButtonSize = 40;
+  static const double _compactIconSize = 22;   // biome icon / back button
   static const double _compactIconSmall = 16;  // stats icons
   static const double _compactFontSize = 12;   // stats font
   static const double _compactBiomeFont = 16;  // biome name font
@@ -65,7 +65,7 @@ class GameTopHud extends StatelessWidget {
         return Container(
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top + 6,
-            left: 10,
+            left: 12,
             right: 10,
             bottom: 8,
           ),
@@ -279,13 +279,18 @@ class _BackButton extends StatelessWidget {
           shape: BoxShape.circle,
           border: Border.all(
             color: const Color(0xFF2E7D32).withValues(alpha: 0.65),
-            width: 1.5,
+            width: 2,
           ),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF2E7D32).withValues(alpha: 0.25),
               blurRadius: 8,
               offset: const Offset(0, 2),
+            ),
+            BoxShadow(
+              color: const Color(0xFF7ED957).withValues(alpha: 0.15),
+              blurRadius: 16,
+              offset: Offset.zero,
             ),
           ],
         ),
