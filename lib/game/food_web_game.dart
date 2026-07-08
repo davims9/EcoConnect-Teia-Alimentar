@@ -320,6 +320,7 @@ class FoodWebGame extends FlameGame {
 
         if (gameService.isConnectionCorrect(sourceId, targetId)) {
           AudioService.instance.playCorrect();
+          line.isCorrect = true;
           line.flashThenColor(AppColors.nextConnectionColor());
           _animatePredatorLunge(source, target);
           _scheduleParticles(particleCenter, true);
@@ -421,10 +422,14 @@ class FoodWebGame extends FlameGame {
 
   void _animateConnectionColors() {
     final wrong = gameService.wrongConnections;
+    final correct = gameService.correctConnections;
     for (final line in connectionLines) {
       final key = '${line.sourceId}-${line.targetId}';
       if (wrong.contains(key)) {
         line.animateColor(AppColors.connectionError);
+      } else if (correct.contains(key)) {
+        line.isCorrect = true;
+        line.animateColor(AppColors.nextConnectionColor());
       }
     }
   }
