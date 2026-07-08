@@ -142,9 +142,11 @@ class ConnectionLine extends Component {
     canvas.drawPath(drawPath, paint);
 
     if (_progress >= 1) {
-      final endTangent = metric.getTangentForOffset(metric.length);
-      if (endTangent != null) {
-        _drawArrow(canvas, endTangent.position, endTangent.vector, paint);
+      // Seta no último terço da linha (~68%), não mais no final perto do organismo
+      final arrowOffset = (metric.length * 0.68).clamp(0.0, metric.length);
+      final arrowTangent = metric.getTangentForOffset(arrowOffset);
+      if (arrowTangent != null) {
+        _drawArrow(canvas, arrowTangent.position, arrowTangent.vector, paint);
       }
 
       if (isCorrect) {
@@ -180,8 +182,10 @@ class ConnectionLine extends Component {
     if (length == 0) return;
     final unit = direction / length;
     
-    final arrowSize = isCorrect ? 16.0 : 12.0;
-    final arrowPoint = position - unit * (AppConstants.organismSize / 2);
+    // Tamanho mais visível: 22px para corretas, 14px para incorretas
+    final arrowSize = isCorrect ? 22.0 : 14.0;
+    // Seta no meio da linha — sem offset de organismo
+    final arrowPoint = position;
     final perpendicular = Offset(-unit.dy, unit.dx);
 
     final path = Path()
@@ -189,26 +193,27 @@ class ConnectionLine extends Component {
       ..lineTo(
         arrowPoint.dx -
             unit.dx * arrowSize +
-            perpendicular.dx * arrowSize * 0.4,
+            perpendicular.dx * arrowSize * 0.45,
         arrowPoint.dy -
             unit.dy * arrowSize +
-            perpendicular.dy * arrowSize * 0.4,
+            perpendicular.dy * arrowSize * 0.45,
       )
       ..lineTo(
         arrowPoint.dx -
             unit.dx * arrowSize -
-            perpendicular.dx * arrowSize * 0.4,
+            perpendicular.dx * arrowSize * 0.45,
         arrowPoint.dy -
             unit.dy * arrowSize -
-            perpendicular.dy * arrowSize * 0.4,
+            perpendicular.dy * arrowSize * 0.45,
       )
       ..close();
 
     if (isCorrect) {
+      // Glow mais intenso para melhor visibilidade
       final glowPaint = Paint()
-        ..color = paint.color.withValues(alpha: 0.5)
+        ..color = paint.color.withValues(alpha: 0.55)
         ..style = PaintingStyle.fill
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
       canvas.drawPath(path, glowPaint);
     }
     
