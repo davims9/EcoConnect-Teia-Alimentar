@@ -287,16 +287,16 @@ class _GameScreenState extends State<GameScreen> {
         decoration: BoxDecoration(
           color: _connectionIsCorrect
               ? const Color(0xFF1B5E20).withValues(alpha: 0.55)
-              : const Color(0xFFB71C1C).withValues(alpha: 0.55),
+              : const Color(0xFFE6553A).withValues(alpha: 0.40),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: (_connectionIsCorrect
                       ? const Color(0xFF4CAF50)
-                      : const Color(0xFFEF5350))
-                  .withValues(alpha: 0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 3),
+                      : const Color(0xFFFF8A65))
+                  .withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
             ),
           ],
         ),

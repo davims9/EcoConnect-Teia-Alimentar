@@ -284,7 +284,7 @@ class FoodWebGame extends FlameGame {
       return messages[Random().nextInt(messages.length)];
     }
     final messages = [
-      '❌ Quase!\n\n$predator não come $prey. Tente outro!',
+      '🌱 Quase!\n\n$predator não come $prey. Tente outro!',
       '🤔 Não é esse!\n\nQuem será que $predator realmente come?',
       '🔍 Observe!\n\n$predator precisa de outra presa.',
     ];
@@ -331,6 +331,7 @@ class FoodWebGame extends FlameGame {
         } else if (gameService.isConnectionReversed(sourceId, targetId)) {
           gameService.registerError();
           AudioService.instance.playWrong();
+          line.isError = true;
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);
@@ -342,6 +343,7 @@ class FoodWebGame extends FlameGame {
         } else {
           gameService.registerError();
           AudioService.instance.playWrong();
+          line.isError = true;
           line.animateColor(AppColors.connectionError);
           source.addShakeEffect();
           _scheduleParticles(particleCenter, false);
@@ -426,6 +428,7 @@ class FoodWebGame extends FlameGame {
     for (final line in connectionLines) {
       final key = '${line.sourceId}-${line.targetId}';
       if (wrong.contains(key)) {
+        line.isError = true;
         line.animateColor(AppColors.connectionError);
       } else if (correct.contains(key)) {
         line.isCorrect = true;
