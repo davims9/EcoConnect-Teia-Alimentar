@@ -37,17 +37,17 @@ class ConnectionEffect extends Component {
         }
       } else {
         final roll = rng.nextDouble();
-        if (roll < 0.55) {
-          color = const Color(0xFFEF5350); // red
+        if (roll < 0.50) {
+          color = const Color(0xFFE6553A); // soft red-orange
         } else if (roll < 0.85) {
-          color = const Color(0xFFFF9800); // orange
+          color = const Color(0xFFFFA726); // warm orange
         } else {
           color = const Color(0xFFBDBDBD); // gray
         }
       }
 
       final angle = rng.nextDouble() * 2 * pi;
-      final speed = 200 + rng.nextDouble() * 200;
+      final speed = isCorrect ? (200 + rng.nextDouble() * 200) : (180 + rng.nextDouble() * 160);
       final radius = isCorrect
           ? (1.5 + rng.nextDouble() * 4.0)
           : (1.5 + rng.nextDouble() * 3.0);
@@ -88,9 +88,9 @@ class ConnectionEffect extends Component {
         alpha = (1.0 - t) * 0.9;
         radius = p.radius * (1.0 + t * 0.8);
       } else {
-        // Dissipation: steady spread, shrink, fade fast
+        // Dissipation: gentle spread, shrink, fade softer
         distance = p.speed * t;
-        alpha = (1.0 - t * t) * 0.8;
+        alpha = (1.0 - t * t) * 0.65;
         radius = p.radius * (1.0 - t * 0.3);
       }
 

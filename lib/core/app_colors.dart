@@ -48,7 +48,8 @@ class AppColors {
 
   static const Color connectionLine = Color(0xFF4CAF50);
   static const Color connectionLineHover = Color(0xFF81C784);
-  static const Color connectionError = Color(0xFFEF5350);
+  static const Color connectionError = Color(0xFFE6553A);
+  static const Color connectionErrorGlow = Color(0xFFFF8A65);
   static const Color organismBorder = Color(0xFF191C1B);
 
   static const List<Color> connectionColors = [
