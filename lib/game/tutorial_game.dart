@@ -36,7 +36,8 @@ class TutorialGame extends FoodWebGame {
     await super.onLoad();
 
     // ── Campo biome background with dark overlay ──
-    add(BackgroundComponent(spritePath: 'cenarios/campo.png', size: size));
+    add(BackgroundComponent(spritePath: 'cenarios/campo.png', size: size)
+      ..priority = -5);
 
     // ── Águia (predator, id: 7, phaseId: 1 ─ Campo) ──
     const eagle = Organism(
@@ -48,7 +49,8 @@ class TutorialGame extends FoodWebGame {
       positionX: 0,
       positionY: 0,
     );
-    final eagleComponent = OrganismComponent(organism: eagle);
+    final eagleComponent = OrganismComponent(organism: eagle)
+      ..priority = 2;
     organismComponents.add(eagleComponent);
 
     // ── Coelho (prey, id: 3, phaseId: 1 ─ Campo) ──
@@ -61,7 +63,8 @@ class TutorialGame extends FoodWebGame {
       positionX: 0,
       positionY: 0,
     );
-    final rabbitComponent = OrganismComponent(organism: rabbit);
+    final rabbitComponent = OrganismComponent(organism: rabbit)
+      ..priority = 2;
     organismComponents.add(rabbitComponent);
 
     add(eagleComponent);
@@ -115,7 +118,7 @@ class TutorialGame extends FoodWebGame {
         targetId: predatorId,
         start: getOrganismCenter(source),
         end: getOrganismCenter(target),
-      );
+      )..priority = 0;
       connectionLines.add(line);
       add(line);
 
