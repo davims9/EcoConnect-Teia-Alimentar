@@ -72,6 +72,7 @@ class FoodWebGame extends FlameGame {
   DragIndicator? dragIndicator;
   BackgroundComponent? _background;
   OrganismComponent? _lastHoveredTarget;
+  int? _focusedOrganismId;
 
   /// Called when a connection is validated, with (isCorrect, message).
   void Function(bool correct, String message)? onConnectionResult;
@@ -93,6 +94,7 @@ class FoodWebGame extends FlameGame {
     AppColors.resetConnectionColorIndex();
     organismComponents.clear();
     connectionLines.clear();
+    _focusedOrganismId = null;
     dragIndicator = null;
     _background = null;
     _lastHoveredTarget = null;
@@ -242,8 +244,41 @@ class FoodWebGame extends FlameGame {
     }
   }
 
+  /// Sets focus to a specific organism, dimming connections not involving it.
+  void _setFocus(int? organismId) {
+    _focusedOrganismId = organismId;
+    _applyFocusToLines();
+  }
+
+  /// Clears focus, restoring all connections to normal rendering.
+  void _clearFocus() {
+    _focusedOrganismId = null;
+    _applyFocusToLines();
+  }
+
+  /// Updates each correct connection line's focus state.
+  ///
+  /// Only correct connections already made by the player are affected.
+  /// Connections involving the focused organism stay strong; others dim.
+  void _applyFocusToLines() {
+    for (final line in connectionLines) {
+      if (!line.isCorrect) continue;
+      if (_focusedOrganismId != null) {
+        final involves = line.sourceId == _focusedOrganismId ||
+            line.targetId == _focusedOrganismId;
+        line.setFocusState(
+          focusActive: true,
+          isFocusedConnection: involves,
+        );
+      } else {
+        line.setFocusState(focusActive: false, isFocusedConnection: false);
+      }
+    }
+  }
+
   void onDragStartOrganism(OrganismComponent component) {
     connectionSystem.startDrag(component);
+    _setFocus(component.organism.id);
   }
 
   void onDragUpdate(Offset position) {
@@ -300,6 +335,7 @@ class FoodWebGame extends FlameGame {
   }
 
   void onDragEnd() {
+    _clearFocus();
     _lastHoveredTarget?.setHighlight(false);
     _lastHoveredTarget = null;
     final source = connectionSystem.dragSource;
