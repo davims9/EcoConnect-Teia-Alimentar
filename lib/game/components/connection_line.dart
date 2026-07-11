@@ -123,6 +123,8 @@ class ConnectionLine extends Component {
   void render(Canvas canvas) {
     final baseStroke = AppConstants.lineStrokeWidth;
     final stroke = isCorrect ? baseStroke * 1.5 : baseStroke;
+    // Dimmed connections are ~67 % of the focused line width (baseStroke = 3.0)
+    final dimmedStroke = baseStroke;
 
     final effectiveColor = isError ? color.withValues(alpha: 0.8) : color;
 
@@ -130,8 +132,8 @@ class ConnectionLine extends Component {
     final bool isDimmed = _focusActive && !_isFocusedConnection && isCorrect;
 
     final paint = Paint()
-      ..color = isDimmed ? effectiveColor.withValues(alpha: 0.2) : effectiveColor
-      ..strokeWidth = stroke
+      ..color = isDimmed ? effectiveColor.withValues(alpha: 0.50) : effectiveColor
+      ..strokeWidth = isDimmed ? dimmedStroke : stroke
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
@@ -143,26 +145,33 @@ class ConnectionLine extends Component {
     final drawLength = metric.length * _progress;
     final drawPath = metric.extractPath(0, drawLength);
 
-    if (!isDimmed) {
-      if (isCorrect && _progress > 0) {
-        // Correct connection: vivid, pulsing glow
-        final glowPaint = Paint()
-          ..color = color.withValues(alpha: 0.4 + 0.2 * sin(_time * 4))
-          ..strokeWidth = stroke * 2.5
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
-        canvas.drawPath(drawPath, glowPaint);
-      } else if (isError && _progress > 0) {
-        // Error connection: subtle, warm glow — noticeably weaker than correct
-        final glowPaint = Paint()
-          ..color = const Color(0xFFFF8A65).withValues(alpha: 0.18 + 0.08 * sin(_time * 3))
-          ..strokeWidth = stroke * 2.0
-          ..style = PaintingStyle.stroke
-          ..strokeCap = StrokeCap.round
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
-        canvas.drawPath(drawPath, glowPaint);
-      }
+    if (isDimmed && _progress > 0) {
+      // Dimmed connection: very subtle glow — much weaker than focused
+      final dimGlowPaint = Paint()
+        ..color = color.withValues(alpha: 0.08)
+        ..strokeWidth = dimmedStroke * 2.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0);
+      canvas.drawPath(drawPath, dimGlowPaint);
+    } else if (isCorrect && _progress > 0) {
+      // Correct connection: vivid, pulsing glow
+      final glowPaint = Paint()
+        ..color = color.withValues(alpha: 0.4 + 0.2 * sin(_time * 4))
+        ..strokeWidth = stroke * 2.5
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
+      canvas.drawPath(drawPath, glowPaint);
+    } else if (isError && _progress > 0) {
+      // Error connection: subtle, warm glow — noticeably weaker than correct
+      final glowPaint = Paint()
+        ..color = const Color(0xFFFF8A65).withValues(alpha: 0.18 + 0.08 * sin(_time * 3))
+        ..strokeWidth = stroke * 2.0
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+      canvas.drawPath(drawPath, glowPaint);
     }
 
     canvas.drawPath(drawPath, paint);
