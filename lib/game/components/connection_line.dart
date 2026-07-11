@@ -18,6 +18,8 @@ class ConnectionLine extends Component {
   bool _isFading = false;
   bool isCorrect = false;
   bool isError = false;
+  bool _focusActive = false;
+  bool _isFocusedConnection = false;
   double _time = 0;
 
   ConnectionLine({
@@ -40,6 +42,12 @@ class ConnectionLine extends Component {
     color = const Color(0xFFFFFFFF);
     _targetColor = finalColor;
     _colorProgress = 0;
+  }
+
+  /// Updates whether this line should render in focus/dimmed mode.
+  void setFocusState({required bool focusActive, required bool isFocusedConnection}) {
+    _focusActive = focusActive;
+    _isFocusedConnection = isFocusedConnection;
   }
 
   /// Gradually fades the line to transparent, then removes it.
@@ -118,8 +126,11 @@ class ConnectionLine extends Component {
 
     final effectiveColor = isError ? color.withValues(alpha: 0.8) : color;
 
+    // Dimmed connections: correct lines not involving the focused organism
+    final bool isDimmed = _focusActive && !_isFocusedConnection && isCorrect;
+
     final paint = Paint()
-      ..color = effectiveColor
+      ..color = isDimmed ? effectiveColor.withValues(alpha: 0.2) : effectiveColor
       ..strokeWidth = stroke
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -132,24 +143,26 @@ class ConnectionLine extends Component {
     final drawLength = metric.length * _progress;
     final drawPath = metric.extractPath(0, drawLength);
 
-    if (isCorrect && _progress > 0) {
-      // Correct connection: vivid, pulsing glow
-      final glowPaint = Paint()
-        ..color = color.withValues(alpha: 0.4 + 0.2 * sin(_time * 4))
-        ..strokeWidth = stroke * 2.5
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
-      canvas.drawPath(drawPath, glowPaint);
-    } else if (isError && _progress > 0) {
-      // Error connection: subtle, warm glow — noticeably weaker than correct
-      final glowPaint = Paint()
-        ..color = const Color(0xFFFF8A65).withValues(alpha: 0.18 + 0.08 * sin(_time * 3))
-        ..strokeWidth = stroke * 2.0
-        ..style = PaintingStyle.stroke
-        ..strokeCap = StrokeCap.round
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
-      canvas.drawPath(drawPath, glowPaint);
+    if (!isDimmed) {
+      if (isCorrect && _progress > 0) {
+        // Correct connection: vivid, pulsing glow
+        final glowPaint = Paint()
+          ..color = color.withValues(alpha: 0.4 + 0.2 * sin(_time * 4))
+          ..strokeWidth = stroke * 2.5
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0);
+        canvas.drawPath(drawPath, glowPaint);
+      } else if (isError && _progress > 0) {
+        // Error connection: subtle, warm glow — noticeably weaker than correct
+        final glowPaint = Paint()
+          ..color = const Color(0xFFFF8A65).withValues(alpha: 0.18 + 0.08 * sin(_time * 3))
+          ..strokeWidth = stroke * 2.0
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+        canvas.drawPath(drawPath, glowPaint);
+      }
     }
 
     canvas.drawPath(drawPath, paint);
@@ -162,7 +175,7 @@ class ConnectionLine extends Component {
         _drawArrow(canvas, arrowTangent.position, arrowTangent.vector, paint);
       }
 
-      if (isCorrect) {
+      if (isCorrect && !isDimmed) {
         final numLeaves = (metric.length / 60).floor();
         for(int i = 1; i <= numLeaves; i++) {
           final dist = (metric.length / (numLeaves + 1)) * i;
