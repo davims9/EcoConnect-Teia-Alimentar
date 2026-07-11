@@ -101,7 +101,8 @@ class FoodWebGame extends FlameGame {
     removeAll(children.whereType<DragIndicator>().toList());
     final phaseId = gameService.currentPhase?.id ?? 1;
     final bgPath = OrganismAssetPath.getBackgroundPath(phaseId);
-    _background = BackgroundComponent(spritePath: bgPath, size: size);
+    _background = BackgroundComponent(spritePath: bgPath, size: size)
+      ..priority = -5;
     add(_background!);
 
     final organisms = gameService.organisms;
@@ -124,6 +125,7 @@ class FoodWebGame extends FlameGame {
       );
       component.position = positions[i];
       component.scale = Vector2.zero();
+      component.priority = 2;
       organismComponents.add(component);
       add(component);
     }
@@ -257,9 +259,15 @@ class FoodWebGame extends FlameGame {
 
     final hovered = _organismAtPoint(position);
     if (hovered != _lastHoveredTarget) {
-      _lastHoveredTarget?.setHighlight(false);
+      // Don't remove the source organism's highlight while dragging.
+      if (_lastHoveredTarget != null && _lastHoveredTarget != source) {
+        _lastHoveredTarget?.setHighlight(false);
+      }
       _lastHoveredTarget = hovered;
-      _lastHoveredTarget?.setHighlight(true);
+      // Source is already highlighted via onDragStart; skip redundant set.
+      if (hovered != null && hovered != source) {
+        hovered.setHighlight(true);
+      }
     }
   }
 
@@ -309,7 +317,7 @@ class FoodWebGame extends FlameGame {
           targetId: targetId,
           start: getOrganismCenter(source),
           end: getOrganismCenter(target),
-        );
+        )..priority = 0;
         connectionLines.add(line);
         add(line);
 
