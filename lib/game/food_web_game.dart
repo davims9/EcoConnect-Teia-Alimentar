@@ -259,9 +259,15 @@ class FoodWebGame extends FlameGame {
 
     final hovered = _organismAtPoint(position);
     if (hovered != _lastHoveredTarget) {
-      _lastHoveredTarget?.setHighlight(false);
+      // Don't remove the source organism's highlight while dragging.
+      if (_lastHoveredTarget != null && _lastHoveredTarget != source) {
+        _lastHoveredTarget?.setHighlight(false);
+      }
       _lastHoveredTarget = hovered;
-      _lastHoveredTarget?.setHighlight(true);
+      // Source is already highlighted via onDragStart; skip redundant set.
+      if (hovered != null && hovered != source) {
+        hovered.setHighlight(true);
+      }
     }
   }
 
