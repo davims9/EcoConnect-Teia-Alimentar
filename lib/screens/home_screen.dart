@@ -6,6 +6,7 @@ import 'ranking_screen.dart';
 import 'about_screen.dart';
 import 'tutorial_screen.dart';
 import '../core/app_constants.dart';
+import '../services/audio_service.dart';
 import '../services/game_service.dart';
 import '../widgets/audio_toggle_button.dart';
 import '../widgets/hover_button.dart';
@@ -27,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   void initState() {
     super.initState();
+    AudioService.instance.setContext(AudioContext.home);
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
