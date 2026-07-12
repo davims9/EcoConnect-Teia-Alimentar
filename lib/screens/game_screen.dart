@@ -41,7 +41,7 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void dispose() {
-    AudioService.instance.stopAmbient();
+    AudioService.instance.leaveGame();
     super.dispose();
   }
 
