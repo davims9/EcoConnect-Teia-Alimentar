@@ -89,18 +89,16 @@ class ClassificationService extends ChangeNotifier {
   TrophicLevel? placementOf(int organismId) => _placements[organismId];
 
   /// IDs of all organisms placed in the given zone.
-  List<int> organismIdsInZone(TrophicLevel zone) =>
-      _placements.entries
-          .where((e) => e.value == zone)
-          .map((e) => e.key)
-          .toList();
+  List<int> organismIdsInZone(TrophicLevel zone) => _placements.entries
+      .where((e) => e.value == zone)
+      .map((e) => e.key)
+      .toList();
 
   /// IDs of all organisms currently in the shelf (not placed).
-  List<int> get unplacedOrganismIds =>
-      _statuses.entries
-          .where((e) => e.value == ClassificationCardStatus.shelf)
-          .map((e) => e.key)
-          .toList();
+  List<int> get unplacedOrganismIds => _statuses.entries
+      .where((e) => e.value == ClassificationCardStatus.shelf)
+      .map((e) => e.key)
+      .toList();
 
   // -------------------------------------------------------------------------
   // Phase lifecycle
@@ -346,8 +344,7 @@ class ClassificationService extends ChangeNotifier {
   // -------------------------------------------------------------------------
 
   /// Number of organisms that used at least one hint.
-  int get hintsUsed =>
-      _hintCounters.values.where((c) => c > 0).length;
+  int get hintsUsed => _hintCounters.values.where((c) => c > 0).length;
 
   /// Total wrong-placement count across all verify calls.
   int get wrongPlacements =>

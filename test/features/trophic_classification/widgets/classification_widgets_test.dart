@@ -19,17 +19,16 @@ Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 Widget _wrapWithService(
   ClassificationService service,
   Widget Function(BuildContext) builder,
-) =>
-    MaterialApp(
-      home: Scaffold(
-        body: ChangeNotifierProvider.value(
-          value: service,
-          child: Consumer<ClassificationService>(
-            builder: (context, s, _) => builder(context),
-          ),
-        ),
+) => MaterialApp(
+  home: Scaffold(
+    body: ChangeNotifierProvider.value(
+      value: service,
+      child: Consumer<ClassificationService>(
+        builder: (context, s, _) => builder(context),
       ),
-    );
+    ),
+  ),
+);
 
 ClassificationService _loadedService() =>
     ClassificationService()..loadPhase(_campoConfig);
@@ -51,10 +50,7 @@ void main() {
 
     test('returns non-empty label for every trophic level', () {
       for (final level in TrophicLevel.values) {
-        expect(
-          ClassificationZoneColors.labelOf(level).isNotEmpty,
-          isTrue,
-        );
+        expect(ClassificationZoneColors.labelOf(level).isNotEmpty, isTrue);
       }
     });
 
@@ -66,10 +62,7 @@ void main() {
 
     test('returns non-empty short label for every trophic level', () {
       for (final level in TrophicLevel.values) {
-        expect(
-          ClassificationZoneColors.shortLabelOf(level).isNotEmpty,
-          isTrue,
-        );
+        expect(ClassificationZoneColors.shortLabelOf(level).isNotEmpty, isTrue);
       }
     });
   });
@@ -80,19 +73,22 @@ void main() {
 
   group('ClassificationOrganismCard', () {
     testWidgets('renders emoji and displayName', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: _org(1),
-          status: ClassificationCardStatus.shelf,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: _org(1),
+            status: ClassificationCardStatus.shelf,
+          ),
         ),
-      ));
+      );
 
       expect(find.text('🌿'), findsOneWidget);
       expect(find.text('Capim'), findsOneWidget);
     });
 
-    testWidgets('renders fallback text when displayName is empty',
-        (tester) async {
+    testWidgets('renders fallback text when displayName is empty', (
+      tester,
+    ) async {
       const org = OrganismClassification(
         organismId: 99,
         expectedLevel: TrophicLevel.producer,
@@ -102,61 +98,71 @@ void main() {
         displayName: '',
       );
 
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: org,
-          status: ClassificationCardStatus.shelf,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: org,
+            status: ClassificationCardStatus.shelf,
+          ),
         ),
-      ));
+      );
 
       expect(find.text('ID 99'), findsOneWidget);
     });
 
     testWidgets('shows check icon when lockedCorrect', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: _org(1),
-          status: ClassificationCardStatus.lockedCorrect,
-          draggable: false,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: _org(1),
+            status: ClassificationCardStatus.lockedCorrect,
+            draggable: false,
+          ),
         ),
-      ));
+      );
 
       expect(find.byIcon(Icons.check_circle), findsOneWidget);
     });
 
     testWidgets('shows error icon when verifiedIncorrect', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: _org(1),
-          status: ClassificationCardStatus.verifiedIncorrect,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: _org(1),
+            status: ClassificationCardStatus.verifiedIncorrect,
+          ),
         ),
-      ));
+      );
 
       expect(find.byIcon(Icons.error), findsOneWidget);
     });
 
     testWidgets('fires onTap callback when tapped', (tester) async {
       int? tappedId;
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: _org(2),
-          status: ClassificationCardStatus.shelf,
-          onTap: () => tappedId = 2,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: _org(2),
+            status: ClassificationCardStatus.shelf,
+            onTap: () => tappedId = 2,
+          ),
         ),
-      ));
+      );
 
       await tester.tap(find.text('Gafanhoto'));
       expect(tappedId, equals(2));
     });
 
     testWidgets('shows selected state with white border', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationOrganismCard(
-          organism: _org(1),
-          status: ClassificationCardStatus.shelf,
-          isSelected: true,
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationOrganismCard(
+            organism: _org(1),
+            status: ClassificationCardStatus.shelf,
+            isSelected: true,
+          ),
         ),
-      ));
+      );
 
       // Card renders — visual assertion that it doesn't crash
       expect(find.text('Capim'), findsOneWidget);
@@ -169,53 +175,61 @@ void main() {
 
   group('ClassificationZone', () {
     testWidgets('renders zone label', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationZone(
-          level: TrophicLevel.producer,
-          organisms: [],
-          statuses: {},
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationZone(
+            level: TrophicLevel.producer,
+            organisms: [],
+            statuses: {},
+          ),
         ),
-      ));
+      );
 
-      expect(find.text('Produtores'), findsOneWidget);
+      expect(find.text('Prod.'), findsOneWidget);
     });
 
     testWidgets('shows placeholder text when empty', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationZone(
-          level: TrophicLevel.producer,
-          organisms: [],
-          statuses: {},
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationZone(
+            level: TrophicLevel.producer,
+            organisms: [],
+            statuses: {},
+          ),
         ),
-      ));
+      );
 
       expect(
-        find.text('Arraste ou toque num card e toque aqui'),
+        find.text('Arraste ou toque num card'),
         findsOneWidget,
       );
     });
 
     testWidgets('renders organisms when provided', (tester) async {
       final capim = _org(1);
-      await tester.pumpWidget(_wrap(
-        ClassificationZone(
-          level: TrophicLevel.producer,
-          organisms: [capim],
-          statuses: {1: ClassificationCardStatus.placed},
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationZone(
+            level: TrophicLevel.producer,
+            organisms: [capim],
+            statuses: {1: ClassificationCardStatus.placed},
+          ),
         ),
-      ));
+      );
 
       expect(find.text('🌿'), findsOneWidget);
     });
 
     testWidgets('shows organism count badge', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationZone(
-          level: TrophicLevel.producer,
-          organisms: [_org(1)],
-          statuses: {1: ClassificationCardStatus.placed},
+      await tester.pumpWidget(
+        _wrap(
+          ClassificationZone(
+            level: TrophicLevel.producer,
+            organisms: [_org(1)],
+            statuses: {1: ClassificationCardStatus.placed},
+          ),
         ),
-      ));
+      );
 
       expect(find.text('1'), findsOneWidget);
     });
@@ -227,11 +241,9 @@ void main() {
 
   group('ClassificationShelf', () {
     testWidgets('renders unplaced organism cards', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationShelf(
-          unplacedOrganisms: _organisms,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ClassificationShelf(unplacedOrganisms: _organisms)),
+      );
 
       // All 7 organisms shown in shelf
       expect(find.text('Capim'), findsOneWidget);
@@ -244,21 +256,17 @@ void main() {
     });
 
     testWidgets('shows shelf label', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationShelf(
-          unplacedOrganisms: _organisms,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ClassificationShelf(unplacedOrganisms: _organisms)),
+      );
 
       expect(find.text('Prateleira'), findsOneWidget);
     });
 
     testWidgets('shows empty placeholder when no cards', (tester) async {
-      await tester.pumpWidget(_wrap(
-        ClassificationShelf(
-          unplacedOrganisms: [],
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(ClassificationShelf(unplacedOrganisms: [])),
+      );
 
       expect(
         find.text('Arraste cards para cá para devolvê-los'),
@@ -274,10 +282,9 @@ void main() {
   group('ClassificationHud', () {
     testWidgets('shows biome name and score', (tester) async {
       final service = _loadedService();
-      await tester.pumpWidget(_wrapWithService(
-        service,
-        (_) => ClassificationHud(service: service),
-      ));
+      await tester.pumpWidget(
+        _wrapWithService(service, (_) => ClassificationHud(service: service)),
+      );
 
       expect(find.text('Campo'), findsOneWidget);
       // Score is 0 initially
@@ -292,10 +299,12 @@ void main() {
   group('ClassificationActionBar', () {
     testWidgets('shows Dica and Verificar buttons', (tester) async {
       final service = _loadedService();
-      await tester.pumpWidget(_wrapWithService(
-        service,
-        (_) => ClassificationActionBar(service: service),
-      ));
+      await tester.pumpWidget(
+        _wrapWithService(
+          service,
+          (_) => ClassificationActionBar(service: service),
+        ),
+      );
 
       expect(find.text('Dica'), findsOneWidget);
       expect(find.text('Verificar'), findsOneWidget);
@@ -308,19 +317,19 @@ void main() {
 
   group('ClassificationGameScreen', () {
     testWidgets('renders game layout with biome name', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: ClassificationGameScreen(config: _campoConfig),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(home: ClassificationGameScreen(config: _campoConfig)),
+      );
       await tester.pump();
 
       // HUD shows biome name
       expect(find.text('Campo'), findsOneWidget);
 
-      // All zone labels visible
-      expect(find.text('Produtores'), findsOneWidget);
-      expect(find.text('Consumidores Primários'), findsOneWidget);
-      expect(find.text('Consumidores Secundários'), findsOneWidget);
-      expect(find.text('Consumidores Terciários'), findsOneWidget);
+      // All zone labels visible (short labels in compact layout)
+      expect(find.text('Prod.'), findsOneWidget);
+      expect(find.text('Cons. Prim.'), findsOneWidget);
+      expect(find.text('Cons. Sec.'), findsOneWidget);
+      expect(find.text('Cons. Terc.'), findsOneWidget);
 
       // Shelf shows Prateleira
       expect(find.text('Prateleira'), findsOneWidget);
@@ -331,9 +340,9 @@ void main() {
     });
 
     testWidgets('progress counter shows placed count', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: ClassificationGameScreen(config: _campoConfig),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(home: ClassificationGameScreen(config: _campoConfig)),
+      );
       await tester.pump();
 
       // Initially 0 de 7
@@ -341,17 +350,17 @@ void main() {
     });
 
     testWidgets('can place a card via tap flow', (tester) async {
-      await tester.pumpWidget(MaterialApp(
-        home: ClassificationGameScreen(config: _campoConfig),
-      ));
+      await tester.pumpWidget(
+        MaterialApp(home: ClassificationGameScreen(config: _campoConfig)),
+      );
       await tester.pump();
 
       // Tap Capim in shelf to select
       await tester.tap(find.text('Capim'));
       await tester.pump();
 
-      // Tap Produtores zone to place
-      await tester.tap(find.text('Produtores'));
+      // Tap Prod. zone to place
+      await tester.tap(find.text('Prod.'));
       await tester.pump();
 
       // Now 1 de 7 placed
@@ -451,10 +460,7 @@ void main() {
       service.placeCard(2, TrophicLevel.primaryConsumer);
       service.placeCard(3, TrophicLevel.primaryConsumer);
 
-      expect(
-        service.organismIdsInZone(TrophicLevel.producer),
-        equals([1]),
-      );
+      expect(service.organismIdsInZone(TrophicLevel.producer), equals([1]));
       expect(
         service.organismIdsInZone(TrophicLevel.primaryConsumer),
         equals([2, 3]),

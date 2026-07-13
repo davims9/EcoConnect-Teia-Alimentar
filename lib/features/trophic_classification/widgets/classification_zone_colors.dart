@@ -15,8 +15,7 @@ class ClassificationZoneColors {
     TrophicLevel.tertiaryConsumer: Color(0xFF8B5CF6),
   };
 
-  static Color colorOf(TrophicLevel level) =>
-      _colors[level] ?? Colors.grey;
+  static Color colorOf(TrophicLevel level) => _colors[level] ?? Colors.grey;
 
   static String labelOf(TrophicLevel level) {
     switch (level) {
@@ -48,13 +47,13 @@ class ClassificationZoneColors {
   static String shortLabelOf(TrophicLevel level) {
     switch (level) {
       case TrophicLevel.producer:
-        return 'Prod.';
+        return 'Produtor';
       case TrophicLevel.primaryConsumer:
-        return 'Cons. Prim.';
+        return 'Consumidor Primário';
       case TrophicLevel.secondaryConsumer:
-        return 'Cons. Sec.';
+        return 'Consumidor Secundário';
       case TrophicLevel.tertiaryConsumer:
-        return 'Cons. Terc.';
+        return 'Consumidor Terciário';
     }
   }
 }

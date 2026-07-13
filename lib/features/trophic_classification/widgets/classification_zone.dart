@@ -7,9 +7,12 @@ import 'classification_zone_colors.dart';
 
 /// A trophic-level zone — a [DragTarget] that accepts organism cards.
 ///
-/// Displays a coloured zone label, the list of placed organisms, and a
-/// placeholder when empty. Supports tap-to-place: fires [onZoneTap] so
-/// the parent can move a selected card into this zone.
+/// Compact horizontal layout: zone label on the left, organism cards on the
+/// right in a scrollable row. The zone height matches the card height so
+/// multiple zones stack compactly without wasted vertical space.
+///
+/// Supports tap-to-place: fires [onZoneTap] so the parent can move a
+/// selected card into this zone.
 ///
 /// [level] — the trophic level this zone represents.
 /// [organisms] — list of organisms currently placed in this zone.
@@ -52,12 +55,12 @@ class ClassificationZone extends StatelessWidget {
         final isDragOver = candidateData.isNotEmpty;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          height: 82,
           decoration: BoxDecoration(
             color: isDragOver || isHighlighted
                 ? _zoneColor.withValues(alpha: 0.08)
                 : const Color(0xFF0B3D22).withValues(alpha: 0.50),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             border: Border(
               left: BorderSide(
                 color: isDragOver || isHighlighted
@@ -71,95 +74,116 @@ class ClassificationZone extends StatelessWidget {
             onTap: onZoneTap,
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Row(
                 children: [
-                  // -- Zone label row -------------------------------------------
-                  Row(
-                    children: [
-                      Icon(
-                        ClassificationZoneColors.iconOf(level),
-                        size: 18,
-                        color: _zoneColor,
-                      ),
-                      const SizedBox(width: 6),
-                      Expanded(
-                        child: Text(
-                          ClassificationZoneColors.labelOf(level),
+                  // -- Zone label (compact, left side, vertical stack) --
+                  SizedBox(
+                    width: 54,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          ClassificationZoneColors.iconOf(level),
+                          size: 16,
+                          color: _zoneColor,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          ClassificationZoneColors.shortLabelOf(level),
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 10,
                             fontWeight: FontWeight.w700,
+                            color: _zoneColor,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // -- Cards area (horizontal scrollable row) --
+                  Expanded(
+                    child: organisms.isEmpty
+                        ? Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_circle_outline,
+                                  size: 16,
+                                  color: _zoneColor.withValues(alpha: 0.40),
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    'Arraste ou toque num card',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: _zoneColor.withValues(alpha: 0.50),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: organisms.length,
+                            itemBuilder: (context, index) {
+                              final org = organisms[index];
+                              final status =
+                                  statuses[org.organismId] ??
+                                  ClassificationCardStatus.placed;
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  right: index < organisms.length - 1 ? 6 : 0,
+                                ),
+                                child: ClassificationOrganismCard(
+                                  organism: org,
+                                  status: status,
+                                  isSelected:
+                                      selectedOrganismId == org.organismId,
+                                  draggable:
+                                      status !=
+                                      ClassificationCardStatus.lockedCorrect,
+                                  onTap: onCardTap != null
+                                      ? () => onCardTap!(org.organismId)
+                                      : null,
+                                  width: 76,
+                                  height: 74,
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                  // -- Count badge --
+                  if (organisms.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _zoneColor.withValues(alpha: 0.20),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${organisms.length}',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
                             color: _zoneColor,
                           ),
                         ),
                       ),
-                      if (organisms.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: _zoneColor.withValues(alpha: 0.20),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Text(
-                            '${organisms.length}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: _zoneColor,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // -- Cards ----------------------------------------------------
-                  if (organisms.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_circle_outline,
-                            size: 20,
-                            color: _zoneColor.withValues(alpha: 0.40),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Arraste ou toque num card e toque aqui',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: _zoneColor.withValues(alpha: 0.50),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  else
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: organisms.map((org) {
-                        final status =
-                            statuses[org.organismId] ??
-                            ClassificationCardStatus.placed;
-                        return ClassificationOrganismCard(
-                          organism: org,
-                          status: status,
-                          isSelected: selectedOrganismId == org.organismId,
-                          draggable:
-                              status != ClassificationCardStatus.lockedCorrect,
-                          onTap: onCardTap != null
-                              ? () => onCardTap!(org.organismId)
-                              : null,
-                          width: 82,
-                          height: 88,
-                        );
-                      }).toList(),
                     ),
                 ],
               ),

@@ -106,7 +106,7 @@ class _CardBody extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         width: width,
         height: height,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: _backgroundColor,
           borderRadius: BorderRadius.circular(12),
@@ -134,32 +134,38 @@ class _CardBody extends StatelessWidget {
                   const Positioned(
                     right: -4,
                     top: -4,
-                    child: Icon(Icons.check_circle,
-                        size: 16, color: Color(0xFF7ED957)),
+                    child: Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: Color(0xFF7ED957),
+                    ),
                   ),
                 if (status == ClassificationCardStatus.verifiedIncorrect)
                   const Positioned(
                     right: -4,
                     top: -4,
-                    child: Icon(Icons.error,
-                        size: 16, color: Color(0xFFFDBA74)),
+                    child: Icon(
+                      Icons.error,
+                      size: 16,
+                      color: Color(0xFFFDBA74),
+                    ),
                   ),
               ],
             ),
-    const SizedBox(height: 1),
-    Text(
-      organism.displayName.isNotEmpty
-          ? organism.displayName
-          : 'ID ${organism.organismId}',
-      style: TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: _textColor,
-      ),
-      textAlign: TextAlign.center,
-      overflow: TextOverflow.ellipsis,
-      maxLines: 1,
-    ),
+            const SizedBox(height: 1),
+            Text(
+              organism.displayName.isNotEmpty
+                  ? organism.displayName
+                  : 'ID ${organism.organismId}',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: _textColor,
+              ),
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           ],
         ),
       ),

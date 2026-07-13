@@ -34,7 +34,7 @@ class ClassificationShelf extends StatelessWidget {
       builder: (context, candidateData, rejectedData) {
         final isDragOver = candidateData.isNotEmpty;
         return Container(
-          height: 112,
+          height: 84,
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             color: isDragOver
@@ -53,7 +53,7 @@ class ClassificationShelf extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 12, top: 6, right: 12),
+                padding: const EdgeInsets.only(left: 12, top: 4, right: 12),
                 child: Row(
                   children: [
                     Icon(
@@ -77,14 +77,15 @@ class ClassificationShelf extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFA4F69E).withValues(alpha: 0.50),
+                          color: const Color(
+                            0xFFA4F69E,
+                          ).withValues(alpha: 0.50),
                         ),
                       ),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: 4),
               Expanded(
                 child: unplacedOrganisms.isEmpty
                     ? Center(
@@ -92,8 +93,9 @@ class ClassificationShelf extends StatelessWidget {
                           'Arraste cards para cá para devolvê-los',
                           style: TextStyle(
                             fontSize: 12,
-                            color: const Color(0xFFA4F69E)
-                                .withValues(alpha: 0.35),
+                            color: const Color(
+                              0xFFA4F69E,
+                            ).withValues(alpha: 0.35),
                             fontStyle: FontStyle.italic,
                           ),
                         ),
@@ -109,13 +111,12 @@ class ClassificationShelf extends StatelessWidget {
                             child: ClassificationOrganismCard(
                               organism: org,
                               status: ClassificationCardStatus.shelf,
-                              isSelected:
-                                  selectedOrganismId == org.organismId,
+                              isSelected: selectedOrganismId == org.organismId,
                               onTap: onCardTap != null
                                   ? () => onCardTap!(org.organismId)
                                   : null,
-                              width: 74,
-                              height: 84,
+                              width: 72,
+                              height: 74,
                             ),
                           );
                         },

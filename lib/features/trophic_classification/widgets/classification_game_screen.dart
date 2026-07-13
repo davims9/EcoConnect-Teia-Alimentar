@@ -45,8 +45,9 @@ class _GameBodyState extends State<_GameBody> {
 
   void _selectCard(int organismId) {
     setState(() {
-      _selectedOrganismId =
-          _selectedOrganismId == organismId ? null : organismId;
+      _selectedOrganismId = _selectedOrganismId == organismId
+          ? null
+          : organismId;
     });
   }
 
@@ -84,11 +85,7 @@ class _GameBodyState extends State<_GameBody> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF052E16),
-            Color(0xFF0B3D22),
-            Color(0xFF0F4C29),
-          ],
+          colors: [Color(0xFF052E16), Color(0xFF0B3D22), Color(0xFF0F4C29)],
         ),
       ),
       child: Column(
@@ -104,31 +101,34 @@ class _GameBodyState extends State<_GameBody> {
             isComplete: isComplete,
           ),
           const SizedBox(height: 4),
-          // ---- Scrollable zones ---------------------------------------------
+          // ---- Compact zones (reversed: tertiary at top, producer at base) ----
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 4),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Column(
-                children: TrophicLevel.values.map((level) {
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: TrophicLevel.values.reversed.map((level) {
                   final zoneOrgs = _organismsInZone(service, level);
-                  return ClassificationZone(
-                    level: level,
-                    organisms: zoneOrgs,
-                    statuses: _buildStatusMap(service),
-                    isHighlighted: service.highlightedLevel == level,
-                    selectedOrganismId: _selectedOrganismId,
-                    onCardTap: _selectCard,
-                    onAccept: (org) {
-                      service.placeCard(org.organismId, level);
-                      _clearSelection();
-                    },
-                    onZoneTap: _selectedOrganismId != null
-                        ? () {
-                            service.placeCard(
-                                _selectedOrganismId!, level);
-                            _clearSelection();
-                          }
-                        : null,
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: ClassificationZone(
+                      level: level,
+                      organisms: zoneOrgs,
+                      statuses: _buildStatusMap(service),
+                      isHighlighted: service.highlightedLevel == level,
+                      selectedOrganismId: _selectedOrganismId,
+                      onCardTap: _selectCard,
+                      onAccept: (org) {
+                        service.placeCard(org.organismId, level);
+                        _clearSelection();
+                      },
+                      onZoneTap: _selectedOrganismId != null
+                          ? () {
+                              service.placeCard(_selectedOrganismId!, level);
+                              _clearSelection();
+                            }
+                          : null,
+                    ),
                   );
                 }).toList(),
               ),
@@ -227,8 +227,7 @@ class _GameBodyState extends State<_GameBody> {
         ),
         title: Row(
           children: [
-            Icon(Icons.lightbulb,
-                size: 22, color: const Color(0xFFFFC107)),
+            Icon(Icons.lightbulb, size: 22, color: const Color(0xFFFFC107)),
             const SizedBox(width: 8),
             const Text(
               'Dica',
@@ -264,8 +263,7 @@ class _GameBodyState extends State<_GameBody> {
   // Verify
   // ---------------------------------------------------------------------------
 
-  void _handleVerify(
-      BuildContext context, ClassificationService service) {
+  void _handleVerify(BuildContext context, ClassificationService service) {
     if (!service.canVerify) return;
 
     final result = service.verify();
@@ -292,15 +290,15 @@ class _GameBodyState extends State<_GameBody> {
         backgroundColor: const Color(0xFF0B3D22),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
-            color: Color(0xFFFDBA74),
-            width: 1.5,
-          ),
+          side: const BorderSide(color: Color(0xFFFDBA74), width: 1.5),
         ),
         title: Row(
           children: [
-            const Icon(Icons.rate_review_outlined,
-                size: 22, color: Color(0xFFFDBA74)),
+            const Icon(
+              Icons.rate_review_outlined,
+              size: 22,
+              color: Color(0xFFFDBA74),
+            ),
             const SizedBox(width: 8),
             const Text(
               'Verificação',
@@ -325,10 +323,7 @@ class _GameBodyState extends State<_GameBody> {
               Text(
                 '$incorrect organismo(s) em zona errada. '
                 'Tente movê-los para outra zona.',
-                style: const TextStyle(
-                  color: Color(0xFFFDBA74),
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Color(0xFFFDBA74), fontSize: 14),
               ),
             ],
             const SizedBox(height: 8),
@@ -383,15 +378,11 @@ class _GameBodyState extends State<_GameBody> {
         backgroundColor: const Color(0xFF0B3D22),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(
-            color: Color(0xFF7ED957),
-            width: 2,
-          ),
+          side: const BorderSide(color: Color(0xFF7ED957), width: 2),
         ),
         title: const Row(
           children: [
-            Icon(Icons.emoji_events,
-                size: 24, color: Color(0xFFFFC107)),
+            Icon(Icons.emoji_events, size: 24, color: Color(0xFFFFC107)),
             SizedBox(width: 8),
             Text(
               'Fase Completa!',
@@ -504,17 +495,11 @@ class _GameBodyState extends State<_GameBody> {
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            color: Color(0xFFF0FDF4),
-            fontSize: 18,
-          ),
+          style: const TextStyle(color: Color(0xFFF0FDF4), fontSize: 18),
         ),
         content: Text(
           message,
-          style: const TextStyle(
-            color: Color(0xFFD4EDDA),
-            fontSize: 14,
-          ),
+          style: const TextStyle(color: Color(0xFFD4EDDA), fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -553,8 +538,10 @@ class _ProgressCounter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isComplete) {
-      return _buildLine('$correct de $total organismos corretos!',
-          const Color(0xFF7ED957));
+      return _buildLine(
+        '$correct de $total organismos corretos!',
+        const Color(0xFF7ED957),
+      );
     }
     return _buildLine(
       '$placed de $total organismos posicionados',

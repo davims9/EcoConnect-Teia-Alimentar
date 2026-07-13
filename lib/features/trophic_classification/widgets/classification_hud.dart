@@ -47,17 +47,20 @@ class ClassificationHud extends StatelessWidget {
                   Row(
                     children: [
                       // Score
-                      Icon(Icons.star,
-                          size: 14,
-                          color: const Color(0xFFFFC107)),
+                      Icon(
+                        Icons.star,
+                        size: 14,
+                        color: const Color(0xFFFFC107),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${service.score}',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFFC107)
-                              .withValues(alpha: 0.85),
+                          color: const Color(
+                            0xFFFFC107,
+                          ).withValues(alpha: 0.85),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -67,14 +70,13 @@ class ClassificationHud extends StatelessWidget {
                         return Padding(
                           padding: const EdgeInsets.only(right: 2),
                           child: Icon(
-                            filled
-                                ? Icons.star
-                                : Icons.star_border,
+                            filled ? Icons.star : Icons.star_border,
                             size: 14,
                             color: filled
                                 ? const Color(0xFFFFC107)
-                                : const Color(0xFFFFC107)
-                                    .withValues(alpha: 0.30),
+                                : const Color(
+                                    0xFFFFC107,
+                                  ).withValues(alpha: 0.30),
                           ),
                         );
                       }),
