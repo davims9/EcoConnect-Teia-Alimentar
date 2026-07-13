@@ -20,10 +20,10 @@ class ClassificationOrganismCard extends StatelessWidget {
   final VoidCallback? onTap;
   final bool draggable;
 
-  /// Preferred width. Default 88.
+  /// Preferred width. Default 84.
   final double width;
 
-  /// Preferred height. Default 96.
+  /// Preferred height. Default 84.
   final double height;
 
   const ClassificationOrganismCard({
@@ -33,8 +33,8 @@ class ClassificationOrganismCard extends StatelessWidget {
     this.isSelected = false,
     this.onTap,
     this.draggable = true,
-    this.width = 88,
-    this.height = 96,
+    this.width = 84,
+    this.height = 84,
   });
 
   @override
@@ -106,7 +106,7 @@ class _CardBody extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         width: width,
         height: height,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
         decoration: BoxDecoration(
           color: _backgroundColor,
           borderRadius: BorderRadius.circular(12),
@@ -116,8 +116,8 @@ class _CardBody extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: _borderColor.withValues(alpha: 0.2),
-              blurRadius: isSelected ? 8 : 4,
+              color: _borderColor.withValues(alpha: isSelected ? 0.35 : 0.15),
+              blurRadius: isSelected ? 10 : 4,
               offset: const Offset(0, 2),
             ),
           ],
@@ -126,14 +126,15 @@ class _CardBody extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
+            // Emoji with status badge
             Stack(
               alignment: Alignment.topRight,
               children: [
-                Text(organism.emoji, style: const TextStyle(fontSize: 24)),
+                Text(organism.emoji, style: const TextStyle(fontSize: 26)),
                 if (status == ClassificationCardStatus.lockedCorrect)
                   const Positioned(
-                    right: -4,
-                    top: -4,
+                    right: -2,
+                    top: -2,
                     child: Icon(
                       Icons.check_circle,
                       size: 16,
@@ -142,8 +143,8 @@ class _CardBody extends StatelessWidget {
                   ),
                 if (status == ClassificationCardStatus.verifiedIncorrect)
                   const Positioned(
-                    right: -4,
-                    top: -4,
+                    right: -2,
+                    top: -2,
                     child: Icon(
                       Icons.error,
                       size: 16,
@@ -152,15 +153,17 @@ class _CardBody extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 1),
+            const SizedBox(height: 2),
+            // Name
             Text(
               organism.displayName.isNotEmpty
                   ? organism.displayName
                   : 'ID ${organism.organismId}',
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
                 color: _textColor,
+                height: 1.1,
               ),
               textAlign: TextAlign.center,
               overflow: TextOverflow.ellipsis,

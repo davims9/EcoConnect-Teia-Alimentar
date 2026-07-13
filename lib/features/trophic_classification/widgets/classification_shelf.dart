@@ -8,6 +8,9 @@ import 'classification_organism_card.dart';
 /// Also acts as a [DragTarget] so players can return placed cards
 /// to the shelf by dragging them here.
 ///
+/// Compact design: when empty, displays a thin message;
+/// when populated, shows one horizontal row of cards.
+///
 /// [unplacedOrganisms] — organisms currently in the shelf.
 /// [selectedOrganismId] — currently selected card (highlighted).
 /// [onCardTap] — a card in the shelf was tapped.
@@ -28,86 +31,95 @@ class ClassificationShelf extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isEmpty = unplacedOrganisms.isEmpty;
+
     return DragTarget<OrganismClassification>(
       onAcceptWithDetails: (details) => onReturnToShelf?.call(details.data),
       onWillAcceptWithDetails: (_) => true,
       builder: (context, candidateData, rejectedData) {
         final isDragOver = candidateData.isNotEmpty;
-        return Container(
-          height: 84,
+        final height = isEmpty ? 32.0 : 82.0;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          height: height,
           margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
             color: isDragOver
                 ? const Color(0xFF2E7D32).withValues(alpha: 0.15)
-                : const Color(0xFF0B3D22).withValues(alpha: 0.40),
-            borderRadius: BorderRadius.circular(12),
+                : const Color(0xFF0B3D22).withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isDragOver
                   ? const Color(0xFF7ED957).withValues(alpha: 0.60)
-                  : const Color(0xFF2E7D32).withValues(alpha: 0.40),
+                  : const Color(0xFF2E7D32).withValues(alpha: 0.30),
               width: isDragOver ? 2 : 1,
             ),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 12, top: 4, right: 12),
-                child: Row(
+          child: isEmpty
+              ? Center(
+                  child: Text(
+                    'Todos os organismos foram posicionados',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: const Color(0xFFA4F69E).withValues(alpha: 0.40),
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.inventory_2_outlined,
-                      size: 14,
-                      color: const Color(0xFFA4F69E).withValues(alpha: 0.70),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Prateleira',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFFA4F69E).withValues(alpha: 0.70),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 10,
+                        top: 3,
+                        right: 10,
                       ),
-                    ),
-                    if (unplacedOrganisms.isNotEmpty) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        '${unplacedOrganisms.length}',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(
-                            0xFFA4F69E,
-                          ).withValues(alpha: 0.50),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              Expanded(
-                child: unplacedOrganisms.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Arraste cards para cá para devolvê-los',
-                          style: TextStyle(
-                            fontSize: 12,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.inventory_2_outlined,
+                            size: 12,
                             color: const Color(
                               0xFFA4F69E,
-                            ).withValues(alpha: 0.35),
-                            fontStyle: FontStyle.italic,
+                            ).withValues(alpha: 0.50),
                           ),
-                        ),
-                      )
-                    : ListView.builder(
+                          const SizedBox(width: 3),
+                          Text(
+                            'Prateleira',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(
+                                0xFFA4F69E,
+                              ).withValues(alpha: 0.50),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${unplacedOrganisms.length}',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(
+                                0xFFA4F69E,
+                              ).withValues(alpha: 0.40),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 6),
                         itemCount: unplacedOrganisms.length,
                         itemBuilder: (context, index) {
                           final org = unplacedOrganisms[index];
                           return Padding(
-                            padding: const EdgeInsets.only(right: 8),
+                            padding: const EdgeInsets.only(right: 6),
                             child: ClassificationOrganismCard(
                               organism: org,
                               status: ClassificationCardStatus.shelf,
@@ -115,15 +127,15 @@ class ClassificationShelf extends StatelessWidget {
                               onTap: onCardTap != null
                                   ? () => onCardTap!(org.organismId)
                                   : null,
-                              width: 72,
-                              height: 74,
+                              width: 70,
+                              height: 68,
                             ),
                           );
                         },
                       ),
-              ),
-            ],
-          ),
+                    ),
+                  ],
+                ),
         );
       },
     );

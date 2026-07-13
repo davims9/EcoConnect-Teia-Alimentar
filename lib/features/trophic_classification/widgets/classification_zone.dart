@@ -7,12 +7,11 @@ import 'classification_zone_colors.dart';
 
 /// A trophic-level zone — a [DragTarget] that accepts organism cards.
 ///
-/// Compact horizontal layout: zone label on the left, organism cards on the
-/// right in a scrollable row. The zone height matches the card height so
-/// multiple zones stack compactly without wasted vertical space.
+/// Height is determined by content (info block + card row). Each zone
+/// has a translucent background in the level colour so the biome image
+/// remains visible underneath.
 ///
-/// Supports tap-to-place: fires [onZoneTap] so the parent can move a
-/// selected card into this zone.
+/// Layout: [info block (fixed width)] [cards (expanding)].
 ///
 /// [level] — the trophic level this zone represents.
 /// [organisms] — list of organisms currently placed in this zone.
@@ -53,51 +52,90 @@ class ClassificationZone extends StatelessWidget {
       onWillAcceptWithDetails: (_) => true,
       builder: (context, candidateData, rejectedData) {
         final isDragOver = candidateData.isNotEmpty;
+        final highlight = isDragOver || isHighlighted;
+
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          height: 82,
+          duration: const Duration(milliseconds: 250),
+          constraints: const BoxConstraints(minHeight: 86, maxHeight: 120),
           decoration: BoxDecoration(
-            color: isDragOver || isHighlighted
-                ? _zoneColor.withValues(alpha: 0.08)
-                : const Color(0xFF0B3D22).withValues(alpha: 0.50),
-            borderRadius: BorderRadius.circular(10),
-            border: Border(
-              left: BorderSide(
-                color: isDragOver || isHighlighted
-                    ? _zoneColor
-                    : _zoneColor.withValues(alpha: 0.60),
-                width: isDragOver ? 4 : (isHighlighted ? 4 : 3),
-              ),
+            color: highlight
+                ? _zoneColor.withValues(alpha: 0.20)
+                : _zoneColor.withValues(alpha: 0.22),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: highlight
+                  ? _zoneColor
+                  : _zoneColor.withValues(alpha: 0.85),
+              width: highlight ? 2.0 : 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: _zoneColor.withValues(alpha: highlight ? 0.25 : 0.18),
+                blurRadius: highlight ? 14 : 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: GestureDetector(
             onTap: onZoneTap,
             behavior: HitTestBehavior.opaque,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // -- Zone label (compact, left side, vertical stack) --
+                  // -- Level info (fixed width) --
                   SizedBox(
-                    width: 54,
+                    width: 120,
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          ClassificationZoneColors.iconOf(level),
-                          size: 16,
-                          color: _zoneColor,
+                        // Level number + icon
+                        Row(
+                          children: [
+                            Icon(
+                              ClassificationZoneColors.iconOf(level),
+                              size: 14,
+                              color: _zoneColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${ClassificationZoneColors.levelNumberOf(level)} N\u00EDvel Tr\u00F3fico',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: _zoneColor.withValues(alpha: 0.90),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
+                        // Category name (never abbreviated)
                         Text(
-                          ClassificationZoneColors.shortLabelOf(level),
+                          ClassificationZoneColors.labelOf(level),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                            color: _zoneColor,
+                            height: 1.15,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 1),
+                        // Short description
+                        Text(
+                          ClassificationZoneColors.descriptionOf(level),
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: _zoneColor,
+                            fontWeight: FontWeight.w500,
+                            color: _zoneColor.withValues(alpha: 0.75),
+                            height: 1.2,
                           ),
-                          textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -105,7 +143,7 @@ class ClassificationZone extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // -- Cards area (horizontal scrollable row) --
+                  // -- Cards area --
                   Expanded(
                     child: organisms.isEmpty
                         ? Center(
@@ -114,7 +152,7 @@ class ClassificationZone extends StatelessWidget {
                               children: [
                                 Icon(
                                   Icons.add_circle_outline,
-                                  size: 16,
+                                  size: 14,
                                   color: _zoneColor.withValues(alpha: 0.40),
                                 ),
                                 const SizedBox(width: 4),
@@ -132,34 +170,32 @@ class ClassificationZone extends StatelessWidget {
                               ],
                             ),
                           )
-                        : ListView.builder(
+                        : SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
-                            itemCount: organisms.length,
-                            itemBuilder: (context, index) {
-                              final org = organisms[index];
-                              final status =
-                                  statuses[org.organismId] ??
-                                  ClassificationCardStatus.placed;
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  right: index < organisms.length - 1 ? 6 : 0,
-                                ),
-                                child: ClassificationOrganismCard(
-                                  organism: org,
-                                  status: status,
-                                  isSelected:
-                                      selectedOrganismId == org.organismId,
-                                  draggable:
-                                      status !=
-                                      ClassificationCardStatus.lockedCorrect,
-                                  onTap: onCardTap != null
-                                      ? () => onCardTap!(org.organismId)
-                                      : null,
-                                  width: 76,
-                                  height: 74,
-                                ),
-                              );
-                            },
+                            child: Row(
+                              children: organisms.map((org) {
+                                final status =
+                                    statuses[org.organismId] ??
+                                    ClassificationCardStatus.placed;
+                                return Padding(
+                                  padding: const EdgeInsets.only(right: 6),
+                                  child: ClassificationOrganismCard(
+                                    organism: org,
+                                    status: status,
+                                    isSelected:
+                                        selectedOrganismId == org.organismId,
+                                    draggable:
+                                        status !=
+                                        ClassificationCardStatus.lockedCorrect,
+                                    onTap: onCardTap != null
+                                        ? () => onCardTap!(org.organismId)
+                                        : null,
+                                    width: 76,
+                                    height: 76,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
                           ),
                   ),
                   // -- Count badge --
@@ -172,14 +208,14 @@ class ClassificationZone extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: _zoneColor.withValues(alpha: 0.20),
+                          color: Colors.black.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
                           '${organisms.length}',
                           style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
                             color: _zoneColor,
                           ),
                         ),
