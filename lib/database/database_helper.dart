@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:meta/meta.dart';
 import 'package:sqflite/sqflite.dart';
 import '../core/app_constants.dart';
 import 'database_seed.dart';
@@ -86,11 +87,45 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE classification_scores (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        classification_phase_key TEXT NOT NULL,
+        biome_phase_id INTEGER NOT NULL,
+        player_name TEXT NOT NULL,
+        score INTEGER NOT NULL,
+        max_score INTEGER NOT NULL,
+        stars INTEGER NOT NULL,
+        wrong_placements INTEGER NOT NULL,
+        hints_used INTEGER NOT NULL DEFAULT 0,
+        attempts INTEGER NOT NULL,
+        completed_at TEXT NOT NULL,
+        FOREIGN KEY (biome_phase_id) REFERENCES phases(id) ON DELETE CASCADE
+      )
+    ''');
+
     await DatabaseSeed.seed(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {}
+    if (oldVersion < 2) {
+      await db.execute('''
+        CREATE TABLE classification_scores (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          classification_phase_key TEXT NOT NULL,
+          biome_phase_id INTEGER NOT NULL,
+          player_name TEXT NOT NULL,
+          score INTEGER NOT NULL,
+          max_score INTEGER NOT NULL,
+          stars INTEGER NOT NULL,
+          wrong_placements INTEGER NOT NULL,
+          hints_used INTEGER NOT NULL DEFAULT 0,
+          attempts INTEGER NOT NULL,
+          completed_at TEXT NOT NULL,
+          FOREIGN KEY (biome_phase_id) REFERENCES phases(id) ON DELETE CASCADE
+        )
+      ''');
+    }
   }
 
   Future<void> close() async {
@@ -99,5 +134,14 @@ class DatabaseHelper {
       await db.close();
       _database = null;
     }
+  }
+
+  /// Resets the singleton for testing purposes only.
+  ///
+  /// Must call [close] before calling this to release the database.
+  @visibleForTesting
+  static void resetForTesting() {
+    _instance = null;
+    _database = null;
   }
 }
