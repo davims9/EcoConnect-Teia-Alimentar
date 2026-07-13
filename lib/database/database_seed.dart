@@ -334,7 +334,7 @@ class DatabaseSeed {
       {'id': 30, 'phase_id': 4, 'source_id': 24, 'target_id': 25},
       {'id': 31, 'phase_id': 4, 'source_id': 25, 'target_id': 26},
       {'id': 32, 'phase_id': 4, 'source_id': 25, 'target_id': 27},
-      {'id': 33, 'phase_id': 4, 'source_id': 25, 'target_id': 28},
+      {'id': 33, 'phase_id': 4, 'source_id': 26, 'target_id': 27},
       {'id': 34, 'phase_id': 4, 'source_id': 27, 'target_id': 29},
       {'id': 35, 'phase_id': 4, 'source_id': 26, 'target_id': 29},
       {'id': 36, 'phase_id': 4, 'source_id': 27, 'target_id': 28},

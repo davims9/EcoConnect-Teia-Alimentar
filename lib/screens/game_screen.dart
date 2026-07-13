@@ -9,6 +9,7 @@ import '../services/audio_service.dart';
 import '../widgets/stars_display.dart';
 import '../widgets/hover_button.dart';
 import '../widgets/game_top_hud.dart';
+import '../services/scoring_service.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -336,13 +337,7 @@ class _GameScreenState extends State<GameScreen> {
     AudioService.instance.playComplete();
     final totalCorrect = service.correctConnections.length;
     final correctCount = service.correctCount;
-    final stars = totalCorrect == 0
-        ? 0
-        : service.errors == 0
-            ? 3
-            : service.errors <= (totalCorrect * 0.4).ceil()
-                ? 2
-                : 1;
+    final stars = ScoringService().calculateStars(correctCount, totalCorrect, service.errors);
 
     showGeneralDialog(
       context: context,
