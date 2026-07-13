@@ -33,6 +33,7 @@ flutter:
     - assets/images/animais/oceano/
     - assets/images/animais/pantanal/
     - assets/images/cenarios/
+    - assets/images/trophic_mode/cenarios/
     - assets/audio/campo/
     - assets/audio/floresta/
     - assets/audio/oceano/
