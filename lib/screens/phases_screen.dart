@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../features/trophic_classification/repositories/classification_score_repository.dart';
+import '../features/trophic_classification/services/classification_phase_builder.dart';
+import '../features/trophic_classification/widgets/classification_game_screen.dart';
 import '../models/phase.dart';
 import '../services/game_service.dart';
 import '../widgets/phase_card.dart';
@@ -17,6 +20,17 @@ class _PhasesScreenState extends State<PhasesScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
 
+  static const _biomeKeys = [
+    'classification_field_01',
+    'classification_forest_01',
+    'classification_ocean_01',
+    'classification_pantanal_01',
+  ];
+
+  final Map<String, int> _classificationStars = {
+    for (final k in _biomeKeys) k: 0,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -27,7 +41,22 @@ class _PhasesScreenState extends State<PhasesScreen>
     _animController.forward();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<GameService>().loadPhases();
+      _loadClassificationStars();
     });
+  }
+
+  Future<void> _loadClassificationStars() async {
+    try {
+      final repo = ClassificationScoreRepository();
+      for (final key in _biomeKeys) {
+        final best = await repo.getBestByClassificationPhaseKey(key);
+        if (!mounted) return;
+        _classificationStars[key] = best?.stars ?? 0;
+      }
+      if (mounted) setState(() {});
+    } catch (_) {
+      // Database may not be available (tests, first launch).
+    }
   }
 
   @override
@@ -76,36 +105,36 @@ class _PhasesScreenState extends State<PhasesScreen>
   Widget _buildHeader() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
-        child: Row(
-          children: [
-            _buildBackButton(),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                'SELECIONAR FASE',
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 4,
-                  color: const Color(0xFFE8F5E9),
-                  shadows: [
-                    Shadow(
-                      color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
-                      blurRadius: 12,
-                    ),
-                    const Shadow(
-                      color: Color(0xFF1B5E20),
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
+      child: Row(
+        children: [
+          _buildBackButton(),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'SELECIONAR FASE',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 4,
+                color: const Color(0xFFE8F5E9),
+                shadows: [
+                  Shadow(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.4),
+                    blurRadius: 12,
+                  ),
+                  const Shadow(
+                    color: Color(0xFF1B5E20),
+                    blurRadius: 4,
+                    offset: Offset(0, 2),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildBackButton() {
@@ -181,12 +210,21 @@ class _PhasesScreenState extends State<PhasesScreen>
         }
         return ListView.builder(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-          itemCount: service.phases.length,
+          itemCount: service.phases.length + 5,
           itemBuilder: (context, index) {
-            final phase = service.phases[index];
-            return PhaseCard(
-              phase: phase,
-              onTap: () => _onPhaseTap(context, phase),
+            if (index < service.phases.length) {
+              final phase = service.phases[index];
+              return PhaseCard(
+                phase: phase,
+                onTap: () => _onPhaseTap(context, phase),
+              );
+            }
+            if (index == service.phases.length) {
+              return _buildClassificationHeader(context);
+            }
+            return _buildClassificationBiomeCard(
+              context,
+              biomeIndex: index - service.phases.length - 1,
             );
           },
         );
@@ -230,6 +268,193 @@ class _PhasesScreenState extends State<PhasesScreen>
         ),
       ),
     );
+  }
+
+  Widget _buildClassificationHeader(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 16, bottom: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A3A24),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(
+              Icons.account_tree_outlined,
+              color: Color(0xFFC4B5FD),
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'Classificação Trófica',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFFE8F5E9),
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassificationBiomeCard(
+    BuildContext context, {
+    required int biomeIndex,
+  }) {
+    final biomeNames = ['Campo', 'Floresta', 'Oceano', 'Pantanal'];
+    final biomeEmojis = ['🌾', '🌲', '🌊', '🌴'];
+    final biomeKeys = _biomeKeys;
+    final biomePhaseIds = [1, 2, 3, 4];
+    final colorAccents = [
+      const Color(0xFF7ED957), // Campo — green
+      const Color(0xFF4CAF50), // Floresta — forest
+      const Color(0xFF42A5F5), // Oceano — blue
+      const Color(0xFFFFCA28), // Pantanal — amber
+    ];
+
+    final name = biomeNames[biomeIndex];
+    final emoji = biomeEmojis[biomeIndex];
+    final key = biomeKeys[biomeIndex];
+    final accent = colorAccents[biomeIndex];
+    final stars = _classificationStars[key] ?? 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: () => _onClassificationBiomeTap(
+          context,
+          biomeIndex: biomeIndex,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF1A3A24).withValues(alpha: 0.9),
+                const Color(0xFF0D2B1A).withValues(alpha: 0.8),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.45),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.10),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.20),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              // Emoji
+              SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  name,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFFE8F5E9),
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.3),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Stars
+              if (stars > 0)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(3, (i) {
+                    final filled = i < stars;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 2),
+                      child: Icon(
+                        filled ? Icons.star : Icons.star_border,
+                        size: 14,
+                        color: filled
+                            ? const Color(0xFFFFC107)
+                            : const Color(0xFFFFC107)
+                                .withValues(alpha: 0.20),
+                      ),
+                    );
+                  }),
+                ),
+              if (stars > 0) const SizedBox(width: 4),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A3A24),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: accent.withValues(alpha: 0.25),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(
+                  Icons.chevron_right_rounded,
+                  color: accent,
+                  size: 18,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _onClassificationBiomeTap(
+    BuildContext context, {
+    required int biomeIndex,
+  }) async {
+    final builders = [
+      const ClassificationPhaseBuilder().buildCampo,
+      const ClassificationPhaseBuilder().buildFloresta,
+      const ClassificationPhaseBuilder().buildOceano,
+      const ClassificationPhaseBuilder().buildPantanal,
+    ];
+    final config = builders[biomeIndex]();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ClassificationGameScreen(config: config),
+      ),
+    );
+    // Refresh stars after returning.
+    await _loadClassificationStars();
   }
 
   void _onPhaseTap(BuildContext context, Phase phase) async {
