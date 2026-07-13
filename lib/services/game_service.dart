@@ -153,7 +153,7 @@ class GameService extends ChangeNotifier {
       }
     }
 
-    _errors += _correctConnections.length - correctCount;
+    // Os erros agora são estritamente os cliques/tentativas incorretas durante o jogo.
     _score = _scoringService.calculateSubmitScore(
       correctCount,
       _correctConnections.length,
@@ -182,6 +182,7 @@ class GameService extends ChangeNotifier {
         stars: _scoringService.calculateStars(
           correctCount,
           _correctConnections.length,
+          _errors,
         ),
         errors: _errors,
         completedAt: DateTime.now().toIso8601String(),

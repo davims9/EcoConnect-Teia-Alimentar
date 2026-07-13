@@ -13,7 +13,7 @@ if (Test-Path $tempDir) {
 }
 
 # Remove Svelte build artifacts to prevent recursive copies
-$svelteDirsToClean = @("dist", "node_modules", "public")
+$svelteDirsToClean = @("dist", "public")
 foreach ($dir in $svelteDirsToClean) {
     $p = Join-Path $webDir $dir
     if (Test-Path $p) { Remove-Item -Path $p -Recurse -Force }
