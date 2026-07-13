@@ -272,36 +272,82 @@ class _PhasesScreenState extends State<PhasesScreen>
 
   Widget _buildClassificationHeader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 16, bottom: 8),
-      child: Row(
+      padding: const EdgeInsets.only(top: 20, bottom: 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Divider
           Container(
-            padding: const EdgeInsets.all(8),
+            height: 1,
+            margin: const EdgeInsets.only(bottom: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1A3A24),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.account_tree_outlined,
-              color: Color(0xFFC4B5FD),
-              size: 18,
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF2E7D32).withValues(alpha: 0.0),
+                  const Color(0xFF2E7D32).withValues(alpha: 0.40),
+                  const Color(0xFF2E7D32).withValues(alpha: 0.0),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 10),
-          Text(
-            'Classificação Trófica',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFFE8F5E9),
-              shadows: [
-                Shadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF7C3AED).withValues(alpha: 0.30),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+                child: const Icon(
+                  Icons.account_tree_outlined,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Classificação Trófica',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFFE8F5E9),
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Arraste os organismos para seus níveis corretos',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFC4B5FD).withValues(alpha: 0.70),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -315,7 +361,6 @@ class _PhasesScreenState extends State<PhasesScreen>
     final biomeNames = ['Campo', 'Floresta', 'Oceano', 'Pantanal'];
     final biomeEmojis = ['🌾', '🌲', '🌊', '🌴'];
     final biomeKeys = _biomeKeys;
-    final biomePhaseIds = [1, 2, 3, 4];
     final colorAccents = [
       const Color(0xFF7ED957), // Campo — green
       const Color(0xFF4CAF50), // Floresta — forest
@@ -330,12 +375,9 @@ class _PhasesScreenState extends State<PhasesScreen>
     final stars = _classificationStars[key] ?? 0;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 10),
       child: GestureDetector(
-        onTap: () => _onClassificationBiomeTap(
-          context,
-          biomeIndex: biomeIndex,
-        ),
+        onTap: () => _onClassificationBiomeTap(context, biomeIndex: biomeIndex),
         child: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -364,59 +406,77 @@ class _PhasesScreenState extends State<PhasesScreen>
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           child: Row(
             children: [
               // Emoji
-              SizedBox(
-                width: 40,
-                height: 40,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D2B1A),
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Center(
-                  child: Text(emoji, style: const TextStyle(fontSize: 22)),
+                  child: Text(emoji, style: const TextStyle(fontSize: 24)),
                 ),
               ),
               const SizedBox(width: 12),
+              // Name and subtitle
               Expanded(
-                child: Text(
-                  name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFFE8F5E9),
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withValues(alpha: 0.3),
-                        blurRadius: 3,
-                        offset: const Offset(0, 1),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      name,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFE8F5E9),
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 3,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Classificar organismos',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFFA4F69E).withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               // Stars
-              if (stars > 0)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(3, (i) {
-                    final filled = i < stars;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 2),
-                      child: Icon(
-                        filled ? Icons.star : Icons.star_border,
-                        size: 14,
-                        color: filled
-                            ? const Color(0xFFFFC107)
-                            : const Color(0xFFFFC107)
-                                .withValues(alpha: 0.20),
-                      ),
-                    );
-                  }),
-                ),
-              if (stars > 0) const SizedBox(width: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (i) {
+                  final filled = i < stars;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 2),
+                    child: Icon(
+                      filled ? Icons.star : Icons.star_border,
+                      size: 14,
+                      color: filled
+                          ? const Color(0xFFFFC107)
+                          : const Color(0xFFFFC107).withValues(alpha: 0.15),
+                    ),
+                  );
+                }),
+              ),
+              const SizedBox(width: 6),
+              // Arrow
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A3A24),
+                  color: const Color(0xFF0D2B1A),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: accent.withValues(alpha: 0.25),
