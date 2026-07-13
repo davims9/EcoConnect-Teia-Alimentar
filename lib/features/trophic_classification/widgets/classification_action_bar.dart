@@ -1,111 +1,77 @@
 import 'package:flutter/material.dart';
-import '../../../widgets/shared/hud_card.dart';
 import '../services/classification_service.dart';
 
-/// Bottom action bar with Hint and Verify buttons.
+/// Floating "Verificar" (verify) CTA button.
 ///
-/// [onHint] — called when the Dica button is tapped (only fires
-/// when the button is enabled). The parent is responsible for
-/// showing the hint dialog.
-///
-/// [onVerify] — called when the Verificar button is tapped.
-/// The parent runs the verification and shows the result.
+/// Replaces the deprecated footer action bar.  The Dica (hint) button has
+/// moved into [ClassificationHud].
 class ClassificationActionBar extends StatelessWidget {
   final ClassificationService service;
-  final VoidCallback? onHint;
   final VoidCallback? onVerify;
 
   const ClassificationActionBar({
     super.key,
     required this.service,
-    this.onHint,
     this.onVerify,
   });
 
   @override
   Widget build(BuildContext context) {
     final canVerify = service.canVerify;
-    final hasSelection = onHint != null;
+    final enabled = canVerify && onVerify != null;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-      child: HudCard(
-        height: 52,
-        radius: 14,
-        borderColor: const Color(0xFF2E7D32),
-        child: Row(
-          children: [
-            const Spacer(flex: 1),
-            // Dica button
-            _ActionButton(
-              icon: Icons.lightbulb_outline,
-              label: 'Dica',
-              isEnabled: hasSelection,
-              onTap: onHint,
+    return Align(
+      alignment: Alignment.center,
+      child: GestureDetector(
+        onTap: enabled ? onVerify : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          decoration: BoxDecoration(
+            color: enabled
+                ? const Color(0xFF7ED957)
+                : const Color(0xFF0B3D22).withValues(alpha: 0.55),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: enabled
+                  ? const Color(0xFF7ED957)
+                  : const Color(0xFF2E7D32).withValues(alpha: 0.40),
+              width: 1.5,
             ),
-            const Spacer(flex: 1),
-            Container(
-              width: 1,
-              height: 24,
-              color: const Color(0xFF2E7D32).withValues(alpha: 0.30),
-            ),
-            const Spacer(flex: 1),
-            // Verificar button
-            _ActionButton(
-              icon: Icons.check_circle_outline,
-              label: 'Verificar',
-              isEnabled: canVerify,
-              onTap: canVerify ? onVerify : null,
-            ),
-            const Spacer(flex: 1),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A single action button in the bar.
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isEnabled;
-  final VoidCallback? onTap;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    this.isEnabled = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final effective = isEnabled && onTap != null;
-    final color = effective
-        ? const Color(0xFFF0FDF4)
-        : const Color(0xFFF0FDF4).withValues(alpha: 0.30);
-
-    return GestureDetector(
-      onTap: effective ? onTap : null,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: effective ? 1.0 : 0.45,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 22, color: color),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: color,
+            boxShadow: enabled
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF7ED957).withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.check_circle_outline,
+                size: 18,
+                color: enabled
+                    ? const Color(0xFF14532D)
+                    : const Color(0xFFF0FDF4).withValues(alpha: 0.30),
               ),
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text(
+                'Verificar',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: enabled
+                      ? const Color(0xFF14532D)
+                      : const Color(0xFFF0FDF4).withValues(alpha: 0.30),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -15,9 +15,13 @@ import 'classification_zone_colors.dart';
 
 /// Main game screen for the Trophic Classification mode.
 ///
-/// Creates a [ClassificationService] scoped to this route via
-/// [ChangeNotifierProvider]. The service is initialised with
-/// the [config] passed in the constructor.
+/// Architecture (Stack):
+/// 1. Biome background image
+/// 2. Dark overlay so content remains readable
+/// 3. Game content: HUD → zones → shelf
+/// 4. Floating "Verificar" CTA button
+///
+/// Progress counter and Dica live inside the HUD — no separate lines.
 class ClassificationGameScreen extends StatelessWidget {
   final ClassificationPhaseConfig config;
 
@@ -58,103 +62,119 @@ class _GameBodyState extends State<_GameBody> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Consumer<ClassificationService>(
-          builder: (context, service, _) {
-            if (!service.hasConfig) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFF7ED957)),
-              );
-            }
-            return _buildLayout(context, service);
-          },
-        ),
+      body: Consumer<ClassificationService>(
+        builder: (context, service, _) {
+          if (!service.hasConfig) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF7ED957)),
+            );
+          }
+          return _buildLayout(context, service);
+        },
       ),
     );
   }
 
+  /// Maps a biome name to its background asset path.
+  String _backgroundAsset(String biomeName) {
+    switch (biomeName) {
+      case 'Campo':
+        return 'assets/images/trophic_mode/cenarios/campo_v2.png';
+      case 'Floresta':
+        return 'assets/images/trophic_mode/cenarios/floresta_v2.png';
+      case 'Oceano':
+        return 'assets/images/trophic_mode/cenarios/oceano_v2.png';
+      case 'Pantanal':
+        return 'assets/images/trophic_mode/cenarios/pantanal_v2.png';
+      default:
+        return 'assets/images/trophic_mode/cenarios/campo_v2.png';
+    }
+  }
+
   Widget _buildLayout(BuildContext context, ClassificationService service) {
     final config = service.config!;
-    final total = config.totalOrganisms;
-    final placed = service.placedCount;
-    final correct = service.correctCount;
     final isComplete = service.isComplete;
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF052E16), Color(0xFF0B3D22), Color(0xFF0F4C29)],
-        ),
-      ),
-      child: Column(
-        children: [
-          // ---- HUD ----------------------------------------------------------
-          ClassificationHud(service: service),
-          const SizedBox(height: 4),
-          // ---- Progress counter ---------------------------------------------
-          _ProgressCounter(
-            placed: placed,
-            total: total,
-            correct: correct,
-            isComplete: isComplete,
-          ),
-          const SizedBox(height: 4),
-          // ---- Compact zones (reversed: tertiary at top, producer at base) ----
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: TrophicLevel.values.reversed.map((level) {
-                  final zoneOrgs = _organismsInZone(service, level);
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: ClassificationZone(
-                      level: level,
-                      organisms: zoneOrgs,
-                      statuses: _buildStatusMap(service),
-                      isHighlighted: service.highlightedLevel == level,
-                      selectedOrganismId: _selectedOrganismId,
-                      onCardTap: _selectCard,
-                      onAccept: (org) {
-                        service.placeCard(org.organismId, level);
-                        _clearSelection();
-                      },
-                      onZoneTap: _selectedOrganismId != null
-                          ? () {
-                              service.placeCard(_selectedOrganismId!, level);
-                              _clearSelection();
-                            }
-                          : null,
-                    ),
-                  );
-                }).toList(),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // 1. Biome background
+        Image.asset(_backgroundAsset(config.biomeName), fit: BoxFit.cover),
+        // 2. Dark overlay
+        Container(color: const Color(0xFF001A0A).withValues(alpha: 0.55)),
+        // 3. Game content
+        SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // HUD (Teia style — includes progress and Dica)
+              ClassificationHud(
+                service: service,
+                onHint: _selectedOrganismId != null && !isComplete
+                    ? () => _showHint(context, service)
+                    : null,
               ),
+              // Zones (content-based height, scrollable)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: ListView(
+                    children: TrophicLevel.values.reversed.map((level) {
+                      final zoneOrgs = _organismsInZone(service, level);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: ClassificationZone(
+                          level: level,
+                          organisms: zoneOrgs,
+                          statuses: _buildStatusMap(service),
+                          isHighlighted: service.highlightedLevel == level,
+                          selectedOrganismId: _selectedOrganismId,
+                          onCardTap: _selectCard,
+                          onAccept: (org) {
+                            service.placeCard(org.organismId, level);
+                            _clearSelection();
+                          },
+                          onZoneTap: _selectedOrganismId != null
+                              ? () {
+                                  service.placeCard(
+                                    _selectedOrganismId!,
+                                    level,
+                                  );
+                                  _clearSelection();
+                                }
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              // Shelf (compact — shrinks when empty)
+              ClassificationShelf(
+                unplacedOrganisms: _unplacedOrganisms(service),
+                selectedOrganismId: _selectedOrganismId,
+                onCardTap: _selectCard,
+                onReturnToShelf: (org) {
+                  service.returnCardToShelf(org.organismId);
+                  _clearSelection();
+                },
+              ),
+            ],
+          ),
+        ),
+        // 4. Floating Verificar CTA
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 12,
+          child: Center(
+            child: ClassificationActionBar(
+              service: service,
+              onVerify: () => _handleVerify(context, service),
             ),
           ),
-          // ---- Shelf --------------------------------------------------------
-          ClassificationShelf(
-            unplacedOrganisms: _unplacedOrganisms(service),
-            selectedOrganismId: _selectedOrganismId,
-            onCardTap: _selectCard,
-            onReturnToShelf: (org) {
-              service.returnCardToShelf(org.organismId);
-              _clearSelection();
-            },
-          ),
-          const SizedBox(height: 4),
-          // ---- Action bar ---------------------------------------------------
-          ClassificationActionBar(
-            service: service,
-            onHint: _selectedOrganismId != null && !isComplete
-                ? () => _showHint(context, service)
-                : null,
-            onVerify: () => _handleVerify(context, service),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -205,7 +225,8 @@ class _GameBodyState extends State<_GameBody> {
       _showInfoDialog(
         context,
         title: 'Dica',
-        message: 'Não há mais dicas disponíveis para este organismo.',
+        message:
+            'N\u00E3o h\u00E1 mais dicas dispon\u00EDveis para este organismo.',
       );
       return;
     }
@@ -301,7 +322,7 @@ class _GameBodyState extends State<_GameBody> {
             ),
             const SizedBox(width: 8),
             const Text(
-              'Verificação',
+              'Verifica\u00E7\u00E3o',
               style: TextStyle(color: Color(0xFFF0FDF4), fontSize: 18),
             ),
           ],
@@ -322,13 +343,13 @@ class _GameBodyState extends State<_GameBody> {
               const SizedBox(height: 8),
               Text(
                 '$incorrect organismo(s) em zona errada. '
-                'Tente movê-los para outra zona.',
+                'Tente mov\u00EA-los para outra zona.',
                 style: const TextStyle(color: Color(0xFFFDBA74), fontSize: 14),
               ),
             ],
             const SizedBox(height: 8),
             Text(
-              'Pontuação: ${service.score}',
+              'Pontua\u00E7\u00E3o: ${service.score}',
               style: const TextStyle(
                 color: Color(0xFFFFC107),
                 fontSize: 14,
@@ -411,7 +432,7 @@ class _GameBodyState extends State<_GameBody> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Pontuação final: $score',
+              'Pontua\u00E7\u00E3o final: $score',
               style: const TextStyle(
                 color: Color(0xFFFFC107),
                 fontSize: 20,
@@ -469,14 +490,14 @@ class _GameBodyState extends State<_GameBody> {
   String _completionMessage(int stars) {
     switch (stars) {
       case 3:
-        return 'Perfeito! Você classificou todos os organismos '
+        return 'Perfeito! Voc\u00EA classificou todos os organismos '
             'corretamente sem erros!';
       case 2:
-        return 'Muito bom! Você classificou a maioria dos '
+        return 'Muito bom! Voc\u00EA classificou a maioria dos '
             'organismos corretamente.';
       default:
-        return 'Você completou a fase! Tente novamente para '
-            'melhorar sua pontuação.';
+        return 'Voc\u00EA completou a fase! Tente novamente para '
+            'melhorar sua pontua\u00E7\u00E3o.';
     }
   }
 
@@ -513,55 +534,6 @@ class _GameBodyState extends State<_GameBody> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Small progress counter shown below the HUD.
-///
-/// Displays "X de Y organismos posicionados" and, after verification,
-/// "Z corretos de Y".
-class _ProgressCounter extends StatelessWidget {
-  final int placed;
-  final int total;
-  final int correct;
-  final bool isComplete;
-
-  const _ProgressCounter({
-    required this.placed,
-    required this.total,
-    required this.correct,
-    required this.isComplete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (isComplete) {
-      return _buildLine(
-        '$correct de $total organismos corretos!',
-        const Color(0xFF7ED957),
-      );
-    }
-    return _buildLine(
-      '$placed de $total organismos posicionados',
-      placed == total
-          ? const Color(0xFFFBBF24)
-          : const Color(0xFFA4F69E).withValues(alpha: 0.70),
-    );
-  }
-
-  Widget _buildLine(String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
-          color: color,
-        ),
-        textAlign: TextAlign.center,
       ),
     );
   }

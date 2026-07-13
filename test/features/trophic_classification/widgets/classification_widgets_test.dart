@@ -60,9 +60,21 @@ void main() {
       }
     });
 
-    test('returns non-empty short label for every trophic level', () {
+    test('returns non-empty level number for every trophic level', () {
       for (final level in TrophicLevel.values) {
-        expect(ClassificationZoneColors.shortLabelOf(level).isNotEmpty, isTrue);
+        expect(
+          ClassificationZoneColors.levelNumberOf(level).isNotEmpty,
+          isTrue,
+        );
+      }
+    });
+
+    test('returns non-empty description for every trophic level', () {
+      for (final level in TrophicLevel.values) {
+        expect(
+          ClassificationZoneColors.descriptionOf(level).isNotEmpty,
+          isTrue,
+        );
       }
     });
   });
@@ -185,7 +197,7 @@ void main() {
         ),
       );
 
-      expect(find.text('Prod.'), findsOneWidget);
+      expect(find.text('Produtores'), findsOneWidget);
     });
 
     testWidgets('shows placeholder text when empty', (tester) async {
@@ -199,10 +211,7 @@ void main() {
         ),
       );
 
-      expect(
-        find.text('Arraste ou toque num card'),
-        findsOneWidget,
-      );
+      expect(find.text('Arraste ou toque num card'), findsOneWidget);
     });
 
     testWidgets('renders organisms when provided', (tester) async {
@@ -263,13 +272,13 @@ void main() {
       expect(find.text('Prateleira'), findsOneWidget);
     });
 
-    testWidgets('shows empty placeholder when no cards', (tester) async {
+    testWidgets('shows compact empty state when no cards', (tester) async {
       await tester.pumpWidget(
         _wrap(ClassificationShelf(unplacedOrganisms: [])),
       );
 
       expect(
-        find.text('Arraste cards para cá para devolvê-los'),
+        find.text('Todos os organismos foram posicionados'),
         findsOneWidget,
       );
     });
@@ -287,7 +296,8 @@ void main() {
       );
 
       expect(find.text('Campo'), findsOneWidget);
-      // Score is 0 initially
+      // Score shows "Pontos: 0" in wide mode (default 800px viewport),
+      // progress card shows "0" → only 1 bare "0" text
       expect(find.text('0'), findsOneWidget);
     });
   });
@@ -297,7 +307,7 @@ void main() {
   // ---------------------------------------------------------------------------
 
   group('ClassificationActionBar', () {
-    testWidgets('shows Dica and Verificar buttons', (tester) async {
+    testWidgets('shows Verificar button (Dica moved to HUD)', (tester) async {
       final service = _loadedService();
       await tester.pumpWidget(
         _wrapWithService(
@@ -306,8 +316,8 @@ void main() {
         ),
       );
 
-      expect(find.text('Dica'), findsOneWidget);
       expect(find.text('Verificar'), findsOneWidget);
+      expect(find.text('Dica'), findsNothing);
     });
   });
 
@@ -325,28 +335,27 @@ void main() {
       // HUD shows biome name
       expect(find.text('Campo'), findsOneWidget);
 
-      // All zone labels visible (short labels in compact layout)
-      expect(find.text('Prod.'), findsOneWidget);
-      expect(find.text('Cons. Prim.'), findsOneWidget);
-      expect(find.text('Cons. Sec.'), findsOneWidget);
-      expect(find.text('Cons. Terc.'), findsOneWidget);
+      // All zone labels visible (full labels)
+      expect(find.text('Produtores'), findsOneWidget);
+      expect(find.text('Consumidores Prim\u00E1rios'), findsOneWidget);
+      expect(find.text('Consumidores Secund\u00E1rios'), findsOneWidget);
+      expect(find.text('Consumidores Terci\u00E1rios'), findsOneWidget);
 
       // Shelf shows Prateleira
       expect(find.text('Prateleira'), findsOneWidget);
 
-      // Action bar shows Verificar (disabled)
+      // Action bar shows Verificar (disabled); Dica is in HUD only when selected
       expect(find.text('Verificar'), findsOneWidget);
-      expect(find.text('Dica'), findsOneWidget);
     });
 
-    testWidgets('progress counter shows placed count', (tester) async {
+    testWidgets('progress counter shows placed count in HUD', (tester) async {
       await tester.pumpWidget(
         MaterialApp(home: ClassificationGameScreen(config: _campoConfig)),
       );
       await tester.pump();
 
-      // Initially 0 de 7
-      expect(find.text('0 de 7 organismos posicionados'), findsOneWidget);
+      // Initially 0/7 — the HUD progress card shows "/7" denominator
+      expect(find.text('/7'), findsOneWidget);
     });
 
     testWidgets('can place a card via tap flow', (tester) async {
@@ -359,12 +368,13 @@ void main() {
       await tester.tap(find.text('Capim'));
       await tester.pump();
 
-      // Tap Prod. zone to place
-      await tester.tap(find.text('Prod.'));
+      // Tap Produtores zone to place
+      await tester.tap(find.text('Produtores'));
       await tester.pump();
 
-      // Now 1 de 7 placed
-      expect(find.text('1 de 7 organismos posicionados'), findsOneWidget);
+      // Progress "/7" denominator remains in HUD; Capim now in Produtores zone
+      expect(find.text('/7'), findsOneWidget);
+      expect(find.text('Capim'), findsOneWidget);
     });
   });
 
